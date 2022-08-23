@@ -26,7 +26,7 @@ def run(config: PeakCallingConfig):
         if config.saveto.enrichment:
             core.io.tobigwig(fe, config.saveto.enrichment, config.saveto.title)
 
-        if config.saveto.pvpeaks is None and config.saveto.fdrpeaks is None:
+        if config.saveto.pvpeaks is None and config.saveto.fdrpeaks is None and config.saveto.pvtrack is None:
             return
 
         # Calculate p-values
@@ -34,7 +34,9 @@ def run(config: PeakCallingConfig):
         pvalues = pool(delayed(core.functors.pvalues.calculate)(w) for w in pileups)
         pvalues, pcounts = zip(*pvalues)
 
-        if config.saveto.pvtrack:
+        print("PVTRACK", config.saveto.pvtrack)
+        if config.saveto.pvtrack is not None:
+            print("ASDA")
             core.io.tobigwig(pvalues, config.saveto.pvtrack, config.saveto.title)
 
         # Calculate q-values

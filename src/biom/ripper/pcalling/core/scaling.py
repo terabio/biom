@@ -3,7 +3,6 @@ from typing import List
 
 import numpy as np
 import pandas as pd
-import swifter
 from scipy import stats
 
 from .config import Scaling
@@ -18,7 +17,7 @@ def median_of_ratios(bins: Path, treatment: List[str], control: List[str]) -> Sc
 
     df = df[(df > 0).all(axis=1)].copy()
 
-    df['GeometricMean'] = df.swifter.apply(stats.gmean, axis=1)
+    df['GeometricMean'] = df.apply(stats.gmean, axis=1)
 
     trtscale = (df['treatment'] / df['GeometricMean']).median()
     cntscale = (df['control'] / df['GeometricMean']).median()

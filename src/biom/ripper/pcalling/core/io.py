@@ -8,6 +8,7 @@ from .utils import Stranded
 
 
 def _tobigwig(tracks: List[Result], bw: Path):
+    print(bw)
     # There must be at least one record
     assert tracks
     # All must be on the same strand
