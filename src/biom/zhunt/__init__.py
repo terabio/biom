@@ -1,1 +1,1 @@
-from .zhunt import predict, iterpredict
+from .zhunt import iterpredict, predict

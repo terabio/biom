@@ -1,2 +1,2 @@
-from .annotate import byrepeats, bytranscriptome
 from . import index
+from .annotate import byrepeats, bytranscriptome

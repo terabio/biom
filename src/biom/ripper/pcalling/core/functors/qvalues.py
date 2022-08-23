@@ -1,12 +1,10 @@
-from collections import defaultdict
 from typing import Dict, List
 
+import numba
 import numpy as np
 
-from .result import Result, Track
-import numba
-
 from .pvalues import FILTERED_PQVALUE
+from .result import Result, Track
 
 
 @numba.jit(cache=True, nopython=True, nogil=True)

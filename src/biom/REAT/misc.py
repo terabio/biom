@@ -1,7 +1,7 @@
+from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
-from dataclasses import dataclass
 
 DTYPES_SITES = {
     'contig': str, 'refnuc': str, 'prednuc': str, 'trstrand': str,

@@ -31,12 +31,6 @@ class Results:
 def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     # Parse BAM contigs
     contigs = fetch_contigs(config.treatment + config.control)
-    trcontigs = set(config.meta.transcriptome_index.keys())
-
-    if not set(trcontigs).issubset(contigs):
-        logging.warning(
-            f"Not all contigs with annotated transcripts are covered by bam files: {trcontigs - contigs}"
-        )
 
     # Build & run pileup workloads
     contigs = tuple(contigs)
@@ -53,8 +47,7 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     for contig in contigs:
         for tag, files in {TREATMENT: config.treatment, CONTROL: config.control}.items():
             workloads.append(pileup.Workload(
-                contig=contig, bamfiles=files, params=prconfigs[tag],
-                trid=config.meta.transcriptome_index.get(contig, None), tags=tag
+                contig=contig, bamfiles=files, params=prconfigs[tag], tags=tag
             ))
     results: List[pileup.Results] = pool(
         delayed(pileup.run)(w) for w in workloads
@@ -64,18 +57,17 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     trtfragments = sum(x.fragments for x in results if x.tags == TREATMENT)
     cntfragments = sum(x.fragments for x in results if x.tags == CONTROL)
 
-    gmbaseline = cntfragments / config.meta.genome_effsize
-    trbaseline = cntfragments / config.meta.transcriptome_effsize
+    gmbaseline = cntfragments / config.geffsize
     print(f"Treatment fragments: {trtfragments}, Control fragments: {cntfragments}")
     print(f"Treatment scaling: {config.process.scaling.treatment}, "
           f"Control scaling: {config.process.scaling.control}")
-    logging.info(f"Genome baseline: {gmbaseline}, transcriptome baseline: {trbaseline}")
+    logging.info(f"Genome baseline: {gmbaseline}")
 
     # Build & run postprocess workloads
     workloads = []
-    baselines = {TREATMENT: (0., 0., config.callp.mintrtfrag), CONTROL: (gmbaseline, trbaseline, 0.)}
+    baselines = {TREATMENT: (0., config.callp.mintrtfrag), CONTROL: (gmbaseline, 0.)}
     for r in results:
-        gmbaseline, trbaseline, minfragments = baselines[r.tags]
+        gmbaseline, minfragments = baselines[r.tags]
 
         if r.tags == TREATMENT:
             scale = config.process.scaling.treatment
@@ -84,8 +76,7 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
             scale = config.process.scaling.control
 
         workloads.append(postprocess.Workload(
-            pileup=r, gmbaseline=gmbaseline, trbaseline=trbaseline, scale=scale,
-            minfragments=np.float32(minfragments)
+            pileup=r, gmbaseline=gmbaseline, scale=scale, minfragments=np.float32(minfragments)
         ))
     results: List[postprocess.Result] = pool(
         delayed(postprocess.run)(w) for w in workloads

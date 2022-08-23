@@ -1,2 +1,2 @@
-from .seqblocks import loadfrom, AlignedBlocks
 from . import strdeductors
+from .seqblocks import AlignedBlocks, loadfrom

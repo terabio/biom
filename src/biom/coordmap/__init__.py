@@ -10,7 +10,7 @@ from pybedtools import BedTool, Interval
 def trexons(CDS: Path) -> Dict[str, List[Interval]]:
     exons = defaultdict(list)
     for interval in BedTool(CDS):
-        exons[interval.geneid].append(interval)
+        exons[interval.name].append(interval)
     exons = {k: sorted(v, key=lambda x: x.start) for k, v in exons.items()}
     for _, trexons in exons.items():
         # exons must be sorted & without overlaps

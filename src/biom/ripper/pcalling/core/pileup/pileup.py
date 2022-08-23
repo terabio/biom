@@ -6,7 +6,7 @@ from typing import List, Tuple
 import numba
 import numpy as np
 import numpy.typing as npt
-from numba import int32, float32
+from numba import float32, int32
 
 from ..fragments.seqblocks import AlignedBlocks
 

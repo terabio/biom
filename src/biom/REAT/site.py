@@ -1,8 +1,7 @@
 import pickle
 from dataclasses import dataclass
-from functools import lru_cache
-from typing import Any, Dict, Set, Tuple, Optional, List
 from pathlib import Path
+from typing import Any, Dict, List, Set, Tuple
 
 from scipy.stats import fisher_exact
 

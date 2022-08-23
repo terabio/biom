@@ -1,2 +1,2 @@
-from . import merge, io
-from .pileup import calculate, Pileup
+from . import io, merge
+from .pileup import Pileup, calculate

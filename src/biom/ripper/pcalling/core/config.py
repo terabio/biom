@@ -4,8 +4,6 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from .transcriptome import TranscriptomeIndex
-
 
 @dataclass(frozen=True)
 class Scaling:
@@ -15,12 +13,6 @@ class Scaling:
 
 @dataclass(frozen=True)
 class PeakCallingConfig:
-    @dataclass(frozen=True)
-    class AssemblyMeta:
-        genome_effsize: int
-        transcriptome_effsize: int
-        transcriptome_index: Dict[str, TranscriptomeIndex]
-
     @dataclass(frozen=True)
     class Saveto:
         title: str
@@ -60,8 +52,9 @@ class PeakCallingConfig:
     # Input bam files
     treatment: List[Path]
     control: List[Path]
+    # Genome size
+    geffsize: int
 
-    meta: AssemblyMeta
     process: ProcessingParams
     callp: PeakCallingParams
     saveto: Saveto

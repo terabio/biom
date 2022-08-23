@@ -1,14 +1,11 @@
 import pickle
 from collections import defaultdict
-from functools import lru_cache
-from pathlib import Path
-
-import numpy as np
 from dataclasses import dataclass
-from . import site
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from .misc import EIslandThreshold
 from .site import EditingSite, SiteStat
-from .misc import SitesThreshold, EIslandThreshold
-from typing import Any, Dict, Tuple, List, Optional
 
 
 @dataclass(frozen=True)

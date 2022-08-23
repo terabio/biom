@@ -1,4 +1,5 @@
-from . import __version__
 from pathlib import Path
 
-CACHE = Path.home().joinpath(".local", "biomodules", __version__)
+from . import __version__
+
+CACHE = Path.home().joinpath(".local", "biom", __version__)

@@ -3,7 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Tuple
 
-from pysam import AlignmentFile, AlignedSegment
+from pysam import AlignedSegment, AlignmentFile
 
 
 @dataclass

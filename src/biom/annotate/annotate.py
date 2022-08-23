@@ -1,10 +1,8 @@
 from collections import defaultdict
-from pathlib import Path
-from typing import Dict, Set, Tuple, Optional
+from typing import Dict, Optional, Set, Tuple
 
 from HTSeq import GenomicArrayOfSets, GenomicInterval
 
-from . import index
 from .. import ensembl, repmasker
 
 

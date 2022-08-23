@@ -1,7 +1,7 @@
+from math import ceil
 from typing import List
 
 from pybedtools import Interval
-from math import ceil
 
 
 def makewindows(interval: Interval, wsize: int, overlapfrac: float) -> List[Interval]:

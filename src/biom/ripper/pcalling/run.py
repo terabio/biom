@@ -1,11 +1,11 @@
 import copy
+from itertools import chain
 
 from joblib import Parallel, delayed
 
 from . import core
 from .core import pipeline
 from .core.config import PeakCallingConfig
-from itertools import chain
 
 
 def run(config: PeakCallingConfig):

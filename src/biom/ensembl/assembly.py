@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Dict
 
-from biomodules.paths import CACHE
+from biom.paths import CACHE
+
 from . import data, fetch
 
 

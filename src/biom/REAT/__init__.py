@@ -1,4 +1,4 @@
-from . import site, roi, eisland, misc
+from . import eisland, misc, roi, site
 
 # for file in path.EDITS_PER_SITE.iterdir():
 #     df = pd.read_csv(file)

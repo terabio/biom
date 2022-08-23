@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 import numpy.typing as npt
 from pysam import AlignedSegment
 
 from .BAMPEReader import BAMPEReader
-from ..utils import Stranded
 from .strdeductors import StrandDeductor
+from ..utils import Stranded
 
 
 @dataclass(frozen=True)

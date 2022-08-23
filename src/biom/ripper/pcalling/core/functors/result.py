@@ -4,8 +4,7 @@ from typing import List, Tuple
 
 import numpy as np
 import numpy.typing as npt
-
-from modules.ripper.pcalling.core.pileup import Pileup
+from ..pileup import Pileup
 
 
 @dataclass()
