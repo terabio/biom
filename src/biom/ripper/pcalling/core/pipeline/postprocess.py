@@ -57,6 +57,8 @@ def run(workload: Workload) -> Result:
         fwd=pileup.merge.by_max([result.fwd], baseline=workload.gmbaseline),
         rev=pileup.merge.by_max([result.rev], baseline=workload.gmbaseline),
     )
+    result.fwd.setflags(write=1)
+    result.rev.setflags(write=1)
 
     # Discard low-covered regions
     if workload.minfragments > 0:
