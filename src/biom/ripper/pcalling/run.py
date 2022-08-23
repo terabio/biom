@@ -34,7 +34,8 @@ def run(config: PeakCallingConfig):
         pvalues = pool(delayed(core.functors.pvalues.calculate)(w) for w in pileups)
         pvalues, pcounts = zip(*pvalues)
 
-        # core.io.tobigwig(pvalues, config.saveto.enrichment, f"{config.saveto.title}.pvalue")
+        if config.saveto.pvtrack:
+            core.io.tobigwig(pvalues, config.saveto.pvtrack, config.saveto.title)
 
         # Calculate q-values
         pqtable = core.functors.qvalues.make_pqtable(pcounts)

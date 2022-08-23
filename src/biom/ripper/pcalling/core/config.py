@@ -18,6 +18,7 @@ class PeakCallingConfig:
         title: str
         pileup: Optional[Path]
         enrichment: Optional[Path]
+        pvtrack: Optional[Path]
         pvpeaks: Optional[Path]
         fdrpeaks: Optional[Path]
 
