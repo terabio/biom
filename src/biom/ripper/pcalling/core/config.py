@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -52,6 +52,8 @@ class PeakCallingConfig:
     # Input bam files
     treatment: List[Path]
     control: List[Path]
+    # Target contigs
+    contigs: Optional[Tuple[str]]
     # Genome size
     geffsize: int
 

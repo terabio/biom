@@ -120,7 +120,7 @@ def _by_max(ends_of_intervals: List[npt.NDArray[np.int32]], values: List[npt.NDA
     return res_ends[:real_length], res_values[:real_length]
 
 
-def by_max(pileups: List[Pileup], baseline: Optional[float32] = None):
+def by_max(pileups: List[Pileup], baseline: Optional[float32] = None) -> Pileup:
     assert len(pileups) > 0 and \
            all(x.id == pileups[0].id and x.interend[-1] == pileups[0].interend[-1] for x in pileups)
 

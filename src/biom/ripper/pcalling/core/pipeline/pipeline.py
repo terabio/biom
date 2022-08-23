@@ -30,10 +30,9 @@ class Results:
 
 def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     # Parse BAM contigs
-    contigs = fetch_contigs(config.treatment + config.control)
+    contigs = config.contigs if config.contigs else fetch_contigs(config.treatment + config.control)
 
     # Build & run pileup workloads
-    contigs = tuple(contigs)
     workloads = []
     prconfigs = {
         CONTROL: config.process,

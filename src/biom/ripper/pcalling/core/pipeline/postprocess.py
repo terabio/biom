@@ -53,12 +53,12 @@ def _normalize(p: Stranded[pileup.Pileup], scale: Optional[np.float32]) -> Stran
 def run(workload: Workload) -> Result:
     # Apply baseline value
     result = workload.pileup.genomic
-    result = Stranded(
+    result: Stranded[pileup.Pileup] = Stranded(
         fwd=pileup.merge.by_max([result.fwd], baseline=workload.gmbaseline),
         rev=pileup.merge.by_max([result.rev], baseline=workload.gmbaseline),
     )
-    result.fwd.setflags(write=1)
-    result.rev.setflags(write=1)
+    result.fwd.values.setflags(write=1)
+    result.rev.values.setflags(write=1)
 
     # Discard low-covered regions
     if workload.minfragments > 0:
