@@ -51,7 +51,7 @@ class GenesInfo:
         # Gene id -> gene name
         self._id2name = {}
         for col in idcolumns:
-            self._id2biotype.update({k: v for k, v in zip(df[col].values, df["Gene name"].values)})
+            self._id2name.update({k: v for k, v in zip(df[col].values, df["Gene name"].values)})
         for k, v in self._id2name.items():
             if pd.isna(v):
                 self._id2name[k] = None
