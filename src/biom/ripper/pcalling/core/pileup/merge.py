@@ -129,7 +129,7 @@ def by_max(pileups: List[Pileup], baseline: Optional[float32] = None) -> Pileup:
         if baseline:
             np.maximum(pileup.values, baseline, out=pileup.values)
             pileup.interend, pileup.values = _simplify(pileup.interend, pileup.values)
-        return pileup
+        return pileup.owned()
 
     # All arrays must be typed and have the same "constness"
     interends, values = numba.typed.List(), numba.typed.List()
@@ -141,7 +141,7 @@ def by_max(pileups: List[Pileup], baseline: Optional[float32] = None) -> Pileup:
 
     baseline = baseline if baseline else np.float32(0)
     ends, values = _by_max(interends, values, baseline)
-    return Pileup(pileups[0].id, ends, values)
+    return Pileup(pileups[0].id, ends, values).owned()
 
 
 class MergeByMaxUnitTests(unittest.TestCase):
