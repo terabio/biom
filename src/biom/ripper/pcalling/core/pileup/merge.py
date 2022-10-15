@@ -127,6 +127,7 @@ def by_max(pileups: List[Pileup], baseline: Optional[float32] = None) -> Pileup:
     if len(pileups) == 1:
         pileup = pileups[0]
         if baseline:
+            pileup.owned()
             np.maximum(pileup.values, baseline, out=pileup.values)
             pileup.interend, pileup.values = _simplify(pileup.interend, pileup.values)
         return pileup.owned()
