@@ -56,15 +56,6 @@ def run(workload: Workload) -> Result:
         fwd=pileup.merge.by_max([result.fwd], baseline=workload.gmbaseline),
         rev=pileup.merge.by_max([result.rev], baseline=workload.gmbaseline),
     )
-    # A costly workaround to avoid creating arrays outside the numba function
-    # In short, if array was subsampled in numba, then we can't force numpy to change it later
-    # Unless the memory is owned, of course. Which can be easily done by copying the data
-    try:
-        result.fwd.values.setflags(write=1)
-        result.rev.values.setflags(write=1)
-    except ValueError:
-        result.fwd.values = result.fwd.values.copy()
-        result.rev.values = result.rev.values.copy()
 
     # Discard low-covered regions
     if workload.minfragments > 0:

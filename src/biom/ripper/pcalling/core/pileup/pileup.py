@@ -24,6 +24,16 @@ class Pileup:
     def __post_init__(self):
         assert self.interend.dtype == np.int32 and self.values.dtype == np.float32
 
+        # A costly workaround to avoid creating arrays outside the numba function
+        # In short, if array was subsampled in numba, then we can't force numpy to change it later
+        # Unless the memory is owned, of course. Which can be easily done by copying the data
+        try:
+            self.values.setflags(write=True)
+            self.interend.setflags(write=True)
+        except ValueError:
+            self.values = self.values.copy()
+            self.interend = self.interend.copy()
+
     @staticmethod
     def from_tuples(contig: str, dense: List[Tuple[int, float]]) -> 'Pileup':
         interend, values = [], []
