@@ -35,9 +35,9 @@ def byrepeats(classification: repmasker.RepmaskerClassification,
 def bytranscriptome(
         assembly: ensembl.EnsemblAssembly,
         trindex: GenomicArrayOfSets, key: GenomicInterval, strand: str, expressed: Optional[Set[str]] = None,
-        priority: Tuple[str, ...] = ("cds", "utr3", "utr5", "exon", "intron", "downstream+10k",),
+        priority: Tuple[str, ...] = ("cds", "utr3", "utr5", "exon", "intron", "upstream-1k", "downstream+10k",),
 ) -> Tuple[Dict[str, float], Dict[str, Set[str]]]:
-    assert strand in ("+", "-")
+    assert strand in ("+", "-", ".")
     priority = {k: ind for ind, k in enumerate(priority)}
 
     weights = defaultdict(int)
@@ -47,7 +47,7 @@ def bytranscriptome(
             if iv.length > 0:
                 options = defaultdict(set)
                 for feature, trid, trstrand in transcripts:
-                    if trstrand == strand:
+                    if trstrand == strand or strand == ".":
                         biotype = assembly.transcripts.id2biotype(trid)
                         assert biotype is not None, f"Unknown transcript ID: {trid}"
                         if (biotype == "protein_coding" or biotype == "lncRNA") and \
