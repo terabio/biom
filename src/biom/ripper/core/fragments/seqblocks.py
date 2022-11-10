@@ -11,6 +11,26 @@ from .strdeductors import StrandDeductor
 from ..utils import Stranded
 
 
+def extract(lmate, rmate) -> list[tuple[int, int]]:
+    blocks = []
+    for segment in lmate, rmate:
+        # detect aligned blocks by parsing CIGAR string
+        refpos = segment.reference_start
+        for op, oplen in segment.cigartuples:
+            # Consume reference: N, D
+            if op == 2 or op == 3:
+                refpos += oplen
+            # Matched: M, X, =
+            elif op == 0 or op == 7 or op == 8:
+                blocks.append((refpos, refpos + oplen))
+                refpos += oplen
+            # else => consume query or do nothing
+
+    blocks = sorted(blocks)
+    assert len(blocks) >= 1
+    return blocks
+
+
 @dataclass(frozen=True)
 class AlignedBlocks:
     # Transcription strand (+, -, .)
@@ -62,22 +82,8 @@ class AlignedBlocksBuilder:
     def add(self, lmate, rmate):
         self.index.append(self.blockind)
 
-        blocks = []
-        for segment in lmate, rmate:
-            # detect aligned blocks by parsing CIGAR string
-            refpos = segment.reference_start
-            for op, oplen in segment.cigartuples:
-                # Consume reference: N, D
-                if op == 2 or op == 3:
-                    refpos += oplen
-                # Matched: M, X, =
-                elif op == 0 or op == 7 or op == 8:
-                    blocks.append((refpos, refpos + oplen))
-                    refpos += oplen
-                # else => consume query or do nothing
+        blocks = extract(lmate, rmate)
 
-        blocks = sorted(blocks)
-        assert len(blocks) >= 1
         # Remove redundant blocks and store results
         curstart, curend = blocks[0]
         for blstart, blend in blocks[1:]:
