@@ -159,7 +159,7 @@ def loadfrom(
 
         if contig not in reader.sf.references:
             continue
-        reader.sf.fetch(contig)
+        reader.fetch(contig)
 
         fwdblocks, revblocks = _oncontig(reader, strdeductor)
         if fwdblocks:

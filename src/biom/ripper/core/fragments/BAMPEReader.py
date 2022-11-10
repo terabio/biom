@@ -1,7 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from pysam import AlignedSegment, AlignmentFile
 
@@ -15,10 +15,17 @@ class BundledFragments:
 class BAMPEReader:
     def __init__(self, filename: Path, inflags: int, exflags: int, minmapq: int):
         self.sf = AlignmentFile(filename, 'rb')
+        self.iterator = self.sf
+
         self.inflags = inflags
         self.exflags = exflags
         self.minmapq = minmapq
+
         self.cache = defaultdict(lambda *args: BundledFragments([], []))
+
+    def fetch(self, contig: str, start: Optional[int] = None, end: Optional[int] = None) -> 'BAMPEReader':
+        self.iterator = self.sf.fetch(contig, start, end)
+        return self
 
     def makepairs(self, fragments: BundledFragments) -> List[Tuple[AlignedSegment, AlignedSegment]]:
         pairs = []
@@ -42,7 +49,7 @@ class BAMPEReader:
         return pairs
 
     def __iter__(self):
-        for ind, segment in enumerate(self.sf):  # type: (int, AlignedSegment)
+        for ind, segment in enumerate(self.iterator):  # type: (int, AlignedSegment)
             # some required flags were not set OR some excluded flags were set
             if not segment.is_paired or \
                     segment.flag & self.inflags != self.inflags or \
