@@ -149,7 +149,12 @@ def loadfrom(
     forward, reverse = [], []
     contiglens = []
     for file in files:
-        reader = BAMPEReader(file, contig, inflags, exflags, minmapq)
+        reader = BAMPEReader(file, inflags, exflags, minmapq)
+
+        if contig not in reader.sf.references:
+            continue
+        reader.sf.fetch(contig)
+
         fwdblocks, revblocks = _oncontig(reader, strdeductor)
         if fwdblocks:
             forward.append(fwdblocks)

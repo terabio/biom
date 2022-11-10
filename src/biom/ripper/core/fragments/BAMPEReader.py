@@ -1,25 +1,26 @@
-import warnings
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
 from typing import List, Tuple
 
 from pysam import AlignedSegment, AlignmentFile
 
 
 @dataclass
-class _BundledFragments:
+class BundledFragments:
     lmates: List[AlignedSegment]
     rmates: List[AlignedSegment]
 
 
-class BundledBAMReader:
-    def __init__(self, filename: str, threads: int = 1):
-        self.sf = AlignmentFile(filename, 'r', threads=threads)
-        self.unpaired = 0
-        self.singletons: List[AlignedSegment] = []
-        self.cache = defaultdict(lambda *args: _BundledFragments([], []))
+class BAMPEReader:
+    def __init__(self, filename: Path, inflags: int, exflags: int, minmapq: int):
+        self.sf = AlignmentFile(filename, 'rb')
+        self.inflags = inflags
+        self.exflags = exflags
+        self.minmapq = minmapq
+        self.cache = defaultdict(lambda *args: BundledFragments([], []))
 
-    def makepairs(self, fragments: _BundledFragments) -> List[Tuple[AlignedSegment, AlignedSegment]]:
+    def makepairs(self, fragments: BundledFragments) -> List[Tuple[AlignedSegment, AlignedSegment]]:
         pairs = []
         missed_lmates = []
         for lmate in fragments.lmates:
@@ -41,22 +42,25 @@ class BundledBAMReader:
         return pairs
 
     def __iter__(self):
-        for ind, segment in enumerate(self.sf):
-            if not segment.is_paired:
-                self.unpaired += 1
+        for ind, segment in enumerate(self.sf):  # type: (int, AlignedSegment)
+            # some required flags were not set OR some excluded flags were set
+            if not segment.is_paired or \
+                    segment.flag & self.inflags != self.inflags or \
+                    segment.flag & self.exflags != 0 or \
+                    segment.mapq < self.minmapq:
                 continue
-            if segment.is_paired:
-                cached = self.cache[segment.query_name]
-                if segment.is_read1:
-                    cached.lmates.append(segment)
-                else:
-                    assert segment.is_read2
-                    cached.rmates.append(segment)
 
-                if len(cached.lmates) >= 1 and len(cached.rmates) >= 1:
-                    bundle = self.makepairs(cached)
-                    if bundle:
-                        yield bundle
+            cached = self.cache[segment.query_name]
+            if segment.is_read1:
+                cached.lmates.append(segment)
+            else:
+                assert segment.is_read2
+                cached.rmates.append(segment)
+
+            if len(cached.lmates) >= 1 and len(cached.rmates) >= 1:
+                bundle = self.makepairs(cached)
+                if bundle:
+                    yield bundle
 
             if ind % 500_000 == 0:
                 for k, v in list(self.cache.items()):
@@ -67,9 +71,3 @@ class BundledBAMReader:
             bundle = self.makepairs(cached)
             if bundle:
                 yield bundle
-            else:
-                self.singletons.extend(cached.lmates)
-                self.singletons.extend(cached.rmates)
-
-        if self.unpaired > 1:
-            warnings.warn(f"{self.unpaired} reads with missing mates encountered")
