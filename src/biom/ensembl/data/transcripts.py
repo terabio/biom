@@ -48,6 +48,11 @@ class TranscriptsInfo:
         for k in idcolumns:
             self._id2gene.update({k: v for k, v in zip(df[k].values, df['Gene stable ID version'].values)})
 
+        # Transcript id -> Gencode level
+        self._id2gencode = {}
+        for k in idcolumns:
+            self._id2gencode.update({k: v for k, v in zip(df[k].values, df['GENCODE basic annotation'].values)})
+
     def _getter(self, mapping, id):
         if id not in mapping:
             id = id.split(".")[0]
@@ -61,6 +66,9 @@ class TranscriptsInfo:
 
     def id2gene(self, id: str) -> Optional[str]:
         return self._getter(self._id2gene, id)
+
+    def id2gencode(self, id: str) -> Optional[str]:
+        return self._getter(self._id2gencode, id)
 
 # @lru_cache(maxsize=None)
 # def incomplete(gtf: Path) -> Set[str]:
