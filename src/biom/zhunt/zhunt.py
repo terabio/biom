@@ -2,14 +2,16 @@ import os
 import subprocess
 import tempfile
 from pathlib import Path
-from subprocess import DEVNULL, PIPE
 
 import numpy as np
 import pandas as pd
 
+# from subprocess import DEVNULL, PIPE
+
 ROOT = Path(__file__).parent
-EXECUTABLE = ROOT.joinpath("zhunt3-alan").as_posix()
-NEXECUTABLE = ROOT.joinpath("zhunt3-optimized").as_posix()
+EXECUTABLE = (ROOT / "zhunt3-alan").as_posix()
+NEXECUTABLE = (ROOT / "zhunt3-optimized").as_posix()
+
 
 # def fetch(contig: str, start: int, end: int) -> np.ndarray:
 #     bw = pyBigWig.open(INDEX)
@@ -42,29 +44,28 @@ def predict(query: str, windowsize: int = 6, minsize: int = 3, maxsize: int = 6)
     file.unlink()
     return df
 
-
-def iterpredict(query: str, windowsize: int = 6, minsize: int = 3, maxsize: int = 6):
-    cmd = [NEXECUTABLE, str(windowsize), str(minsize), str(maxsize)]
-    popen = subprocess.Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=DEVNULL)
-    popen.stdin.write(query.encode("ascii"))
-    popen.stdin.close()
-
-    iterator = iter(popen.stdout.readline, "")
-    length = int(next(iterator).decode().split()[0])
-    assert length == len(query)
-
-    yielded = 0
-    for line in iterator:
-        try:
-            line = float(line)
-        except ValueError:
-            break
-        yield line
-        yielded += 1
-    popen.stdout.close()
-
-    assert yielded == length == len(query), \
-        f"For query {query} \n Z-score has length {yielded} vs query length {len(query)}"
-    return_code = popen.wait()
-    if return_code:
-        raise subprocess.CalledProcessError(return_code, cmd)
+# def iterpredict(query: str, windowsize: int = 6, minsize: int = 3, maxsize: int = 6):
+#     cmd = [NEXECUTABLE, str(windowsize), str(minsize), str(maxsize)]
+#     popen = subprocess.Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=DEVNULL)
+#     popen.stdin.write(query.encode("ascii"))
+#     popen.stdin.close()
+#
+#     iterator = iter(popen.stdout.readline, "")
+#     length = int(next(iterator).decode().split()[0])
+#     assert length == len(query)
+#
+#     yielded = 0
+#     for line in iterator:
+#         try:
+#             line = float(line)
+#         except ValueError:
+#             break
+#         yield line
+#         yielded += 1
+#     popen.stdout.close()
+#
+#     assert yielded == length == len(query), \
+#         f"For query {query} \n Z-score has length {yielded} vs query length {len(query)}"
+#     return_code = popen.wait()
+#     if return_code:
+#         raise subprocess.CalledProcessError(return_code, cmd)
