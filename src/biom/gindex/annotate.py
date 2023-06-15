@@ -5,51 +5,54 @@ from typing import Iterable, Any, Union, Literal, Callable
 from .index import Index, AnnotationIntervals
 from ..range import Range
 
-CollapseFn = Callable[['Annotator', dict[Any, float]], Any]
-CollapseStrategy = Union[
-    Literal["nms", "norm-coverage", "coverage"],
+AnnotateFn = Callable[['Annotator', dict[Any, float]], Any]
+AnnotateStrategy = Union[
+    Literal["nms", "frac-overlap"],
     tuple[Literal["priority"], tuple[Any, ...]],
-    CollapseFn
+    AnnotateFn
 ]
 
-OverlapsFn = Callable[['Annotator', AnnotationIntervals, Range, dict[Any, float]], None]
-OverlapsStrategy = Union[
+DisambiguateFn = Callable[['Annotator', AnnotationIntervals, Range, dict[Any, float]], None]
+DisambiguateStrategy = Union[
     Literal["proportional"],
-    tuple[Literal["new-category"], str],
-    OverlapsFn
+        # tuple[Literal["new-category"], str],
+    DisambiguateFn
 ]
 
 
 class Annotator:
     index: Index
     empty: Any
-    overlapfn: OverlapsFn
-    collapsefn: CollapseFn
+    disambigfn: DisambiguateFn
+    annotatefn: AnnotateFn
 
-    def __init__(self, index: Index, empty: Any = "NA",
-                 overlap: OverlapsStrategy = "proportional", collapse: CollapseStrategy = "nms"):
+    def __init__(
+            self, index: Index, empty: Any = "NA",
+            disambiguation: DisambiguateStrategy = "proportional",
+            annotation: AnnotateStrategy = "nms"
+    ):
         self.index = index
         self.empty = empty
 
-        match overlap:
+        match disambiguation:
             case "proportional":
-                self.overlapfn = proportional
-            case ("new-category", category):
-                self.overlapfn = overlap_to_new_category(category)
+                self.disambigfn = proportional
+            # case ("new-category", category):
+            #     self.disambigfn = overlap_to_new_category(category)
             case _:
-                self.overlapfn = overlap
+                self.disambigfn = disambiguation
 
-        match collapse:
+        match annotation:
             case "nms":
-                self.collapsefn = nms
-            case "norm-coverage":
-                self.collapsefn = norm_coverage
-            case "coverage":
-                self.collapsefn = coverage
+                self.annotatefn = nms
+            case "frac-overlap":
+                self.annotatefn = frac_overlap
+            # case "coverage":
+            #     self.collapsefn = coverage
             case ("priority", scoring):
-                self.collapsefn = priority(scoring)
+                self.annotatefn = priority(scoring)
             case _:
-                self.collapsefn = collapse
+                self.annotatefn = annotation
 
     def annotate(self, contig: str, strand: str, blocks: Iterable[Range]) -> Any:
         overlap = defaultdict(int)
@@ -59,35 +62,41 @@ class Annotator:
                 case 0:
                     overlap[self.empty] += len(bl)
                 case 1:
-                    anno, rng = intervals.annotation[0], intervals.intervals[0]
-                    length = len(rng)
+                    anno, length = intervals.annotation[0], len(intervals.intervals[0])
                     overlap[anno] += length
-                    overlap[self.empty] += len(bl) - length
+
+                    diff = len(bl) - length
+                    if diff > 0:
+                        overlap[self.empty] += diff
                 case _:
-                    self.overlapfn(self, intervals, bl, overlap)
+                    self.disambigfn(self, intervals, bl, overlap)
 
         assert math.isclose(sum(overlap.values()), sum(len(bl) for bl in blocks), abs_tol=1e-6)
-        return self.collapsefn(self, overlap)
+        return self.annotatefn(self, overlap)
+
+    def annotatei(self, contig: str, strand: str, blocks: Iterable[tuple[int, int]]) -> Any:
+        blocks = [Range(start, end) for start, end in blocks]
+        return self.annotate(contig, strand, blocks)
 
 
 def nms(_: Annotator, overlap: dict[Any, float]) -> Any:
-    return max(overlap.items(), key=lambda x: x[0])[1]
+    return max(overlap.items(), key=lambda x: x[1])[0]
 
 
-def coverage(_: Annotator, overlap: dict[Any, float]) -> Any:
-    return overlap
+# def coverage(_: Annotator, overlap: dict[Any, float]) -> Any:
+#     return overlap
 
 
-def norm_coverage(_: Annotator, overlap: dict[Any, float]) -> Any:
+def frac_overlap(_: Annotator, overlap: dict[Any, float]) -> Any:
     total = sum(overlap.values())
     return {k: v / total for k, v in overlap.items()}
 
 
-def priority(scoring: tuple[Any, ...]) -> CollapseFn:
+def priority(scoring: tuple[Any, ...]) -> AnnotateFn:
     scoring = {k: ind for ind, k in enumerate(scoring)}
 
     def job(_: Annotator, overlap: dict[Any, float]) -> Any:
-        return min(overlap.items(), key=lambda x: scoring[x[0]])
+        return min(overlap.items(), key=lambda x: scoring[x[0]])[0]
 
     return job
 
@@ -103,9 +112,8 @@ def proportional(self: Annotator, intervals: AnnotationIntervals, rng: Range, ov
             for a in anno:
                 overlap[a] += weight
 
-
-def overlap_to_new_category(category: Any) -> OverlapsFn:
-    def job(_: Annotator, __: AnnotationIntervals, ___: Range, ____: dict[Any, float]) -> Any:
-        return category
-
-    return job
+# def overlap_to_new_category(category: Any) -> DisambiguateFn:
+#     def job(_: Annotator, __: AnnotationIntervals, ___: Range, ____: dict[Any, float]) -> Any:
+#         return category
+#
+#     return job

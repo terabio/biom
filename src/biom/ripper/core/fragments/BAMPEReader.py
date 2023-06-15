@@ -35,8 +35,12 @@ class BAMPEReader:
             for ind, rmate in enumerate(fragments.rmates):
                 if lmate.next_reference_id == rmate.reference_id and \
                         lmate.next_reference_start == rmate.reference_start and \
+                        lmate.mate_is_reverse == rmate.is_reverse and \
+                        lmate.mate_is_mapped == rmate.is_mapped and \
                         rmate.next_reference_id == lmate.reference_id and \
-                        rmate.next_reference_start == lmate.reference_start:
+                        rmate.next_reference_start == lmate.reference_start and \
+                        rmate.mate_is_reverse == lmate.is_reverse and \
+                        rmate.mate_is_mapped == lmate.is_mapped:
                     mate_found = True
                     break
 

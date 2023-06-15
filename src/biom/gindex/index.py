@@ -68,10 +68,10 @@ class AnnotationIntervals:
         for it in self.intervals:
             boundaries.add(it.start)
             boundaries.add(it.end)
-        annotation = [set() for _ in boundaries]
+        annotation = [set() for _ in range(len(boundaries) - 1)]
 
         for it, anno in zip(self.intervals, self.annotation):
-            st, en = boundaries.bisect_left(it.start), boundaries.bisect_right(it.end)
+            st, en = boundaries.bisect_left(it.start), boundaries.bisect_left(it.end)
             for stanno in annotation[st:en]:
                 stanno.add(anno)
 
