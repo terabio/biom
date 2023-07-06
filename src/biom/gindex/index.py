@@ -68,8 +68,8 @@ class AnnotationIntervals:
         for it in self.intervals:
             boundaries.add(it.start)
             boundaries.add(it.end)
-            
-        if boundaries[0] != rng.start:
+
+        if len(boundaries) == 0 or boundaries[0] != rng.start:
             boundaries.add(rng.start)
 
         if boundaries[-1] != rng.end:
