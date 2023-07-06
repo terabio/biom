@@ -64,10 +64,17 @@ class AnnotationIntervals:
     annotation: list[Any]
 
     def to_steps(self, rng: Range) -> AnnotationSteps:
-        boundaries = SortedList((rng.start, rng.end))
+        boundaries = SortedList()
         for it in self.intervals:
             boundaries.add(it.start)
             boundaries.add(it.end)
+            
+        if boundaries[0] != rng.start:
+            boundaries.add(rng.start)
+
+        if boundaries[-1] != rng.end:
+            boundaries.add(rng.end)
+
         annotation = [set() for _ in range(len(boundaries) - 1)]
 
         for it, anno in zip(self.intervals, self.annotation):
