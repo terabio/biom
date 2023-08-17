@@ -3,7 +3,10 @@ from pathlib import Path
 from subprocess import check_call
 
 ENSEMBL_RELEASES = {
-    107: "http://jul2022.archive.ensembl.org"
+    107: "http://jul2022.archive.ensembl.org",
+    108: "http://oct2022.archive.ensembl.org",
+    109: "http://feb2023.archive.ensembl.org",
+    110: "http://jul2023.archive.ensembl.org",
 }
 
 

@@ -1,7 +1,6 @@
+import pandas as pd
 from pathlib import Path
 from typing import Optional, Tuple
-
-import pandas as pd
 
 DTYPES = {
     "Gene stable ID version": str,
@@ -53,6 +52,11 @@ class TranscriptsInfo:
         for k in idcolumns:
             self._id2gencode.update({k: v for k, v in zip(df[k].values, df['GENCODE basic annotation'].values)})
 
+        # Transcript id -> tsl
+        self._id2tsl = {}
+        for k in idcolumns:
+            self._id2tsl.update({k: v for k, v in zip(df[k].values, df['Transcript support level (TSL)'].values)})
+
     def _getter(self, mapping, id):
         if id not in mapping:
             id = id.split(".")[0]
@@ -69,6 +73,9 @@ class TranscriptsInfo:
 
     def id2gencode(self, id: str) -> Optional[str]:
         return self._getter(self._id2gencode, id)
+
+    def id2tsl(self, id: str) -> Optional[str]:
+        return self._getter(self._id2tsl, id)
 
 # @lru_cache(maxsize=None)
 # def incomplete(gtf: Path) -> Set[str]:
