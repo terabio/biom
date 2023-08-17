@@ -7,7 +7,7 @@ from . import data, fetch
 
 
 class EnsemblAssembly:
-    def __init__(self, name: str, organism: str, version: int = 107):
+    def __init__(self, name: str, organism: str, version: int = 110):
         self.name: str = name
         self.organism: str = organism
         self.version: int = version
