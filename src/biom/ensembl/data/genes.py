@@ -65,17 +65,21 @@ class GenesInfo:
         self._id2transcripts = {k: tuple(v) for k, v in self._id2transcripts.items()}
 
         # Gene name -> gene id
-        self._name2id = {k: v for k, v in zip(df['Gene name'].values, df['Gene stable ID version'].values)}
+        self._name2id = {
+            k: v for k, v in zip(df['Gene name'].values, df['Gene stable ID version'].values) if not pd.isna(k)
+        }
 
         # Synonyms -> gene id
         self._synonym2id = self._name2id.copy()
-        self._synonym2id.update({k: v for k, v in zip(df['Gene Synonym'].values, df['Gene stable ID version'].values)})
+        self._synonym2id.update(
+            {k: v for k, v in zip(df['Gene Synonym'].values, df['Gene stable ID version'].values) if not pd.isna(k)}
+        )
         # self._synonym2id.update({
         #     k: v
         #     for k, v in zip(df['NCBI gene (formerly Entrezgene) accession'].values, df['Gene stable ID version'].values)
         # })
-        self._synonym2id.update({k.lower(): v for k, v in self._synonym2id.items() if k not in self._synonym2id})
-        self._synonym2id.update({k.upper(): v for k, v in self._synonym2id.items() if k not in self._synonym2id})
+        self._synonym2id.update({k.lower(): v for k, v in self._synonym2id.items()})
+        self._synonym2id.update({k.upper(): v for k, v in self._synonym2id.items()})
 
     def _getter(self, mapping, id):
         if id not in mapping:
