@@ -1,1 +1,0 @@
-from .zhunt import predict
