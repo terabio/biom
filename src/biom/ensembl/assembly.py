@@ -1,33 +1,38 @@
-from pathlib import Path
-from typing import Dict
-
-from biom.paths import CACHE
-
-from . import data, fetch
+from . import gene, transcript
 
 
-class EnsemblAssembly:
-    def __init__(self, name: str, organism: str, version: int = 110):
-        self.name: str = name
-        self.organism: str = organism
-        self.version: int = version
+class Assembly:
+    def __init__(
+            self, name: str, organism: str, version: int,
+            transcripts: gene.Descriptor | None = None, genes: transcript.Descriptor | None = None
+    ):
+        self._name = name
+        self._organism = organism
+        self._version = version
 
-        cache = CACHE.joinpath("ensembl", self.name, str(self.version))
-        self._cache: Dict[str, Path] = {}
+        self._transcripts = transcripts
+        self._genes = genes
 
-        self._cache['transcripts'] = cache.joinpath("transcripts-info.tsv.gz")
-        if self._cache['transcripts'].exists():
-            self.transcripts = data.TranscriptsInfo(self._cache['transcripts'])
-            self.genes = data.GenesInfo(self._cache['transcripts'])
+    @property
+    def name(self) -> str:
+        return self._name
 
-        self._cache['contigs'] = cache.joinpath("Ensembl2UCSC.txt")
-        if self._cache['contigs'].exists():
-            self.contigs = data.ContigsInfo(self._cache['contigs'])
+    @property
+    def organism(self) -> str:
+        return self._organism
 
-    def fetch(self, what: str, force: bool = False) -> 'EnsemblAssembly':
-        assert what in {"transcripts"}
+    @property
+    def version(self) -> int:
+        return self._version
 
-        fetch.transcripts(self.organism, self.version, self._cache['transcripts'], force)
+    @property
+    def transcripts(self) -> gene.Descriptor:
+        if self._transcripts is None:
+            raise ValueError("Transcripts information is not available")
+        return self._transcripts
 
-        # Reload the class
-        return EnsemblAssembly(self.name, self.organism, version=self.version)
+    @property
+    def genes(self) -> transcript.Descriptor:
+        if self._genes is None:
+            raise ValueError("Genes information is not available")
+        return self._genes
