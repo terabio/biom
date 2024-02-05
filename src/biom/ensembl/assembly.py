@@ -4,7 +4,7 @@ from . import gene, transcript
 class Assembly:
     def __init__(
             self, name: str, organism: str, version: int,
-            transcripts: gene.Descriptor | None = None, genes: transcript.Descriptor | None = None
+            transcripts: transcript.Descriptor | None = None, genes: gene.Descriptor | None = None
     ):
         self._name = name
         self._organism = organism
@@ -26,13 +26,13 @@ class Assembly:
         return self._version
 
     @property
-    def transcripts(self) -> gene.Descriptor:
+    def transcripts(self) -> transcript.Descriptor:
         if self._transcripts is None:
             raise ValueError("Transcripts information is not available")
         return self._transcripts
 
     @property
-    def genes(self) -> transcript.Descriptor:
+    def genes(self) -> gene.Descriptor:
         if self._genes is None:
             raise ValueError("Genes information is not available")
         return self._genes

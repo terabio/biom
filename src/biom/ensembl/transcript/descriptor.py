@@ -61,6 +61,7 @@ class Descriptor(EnsemblDescriptor):
         }
         for attr in attributes - {Attribute.ID}:
             for r, val in zip(records, df[attr.colname]):
+                val = val if not pd.isna(val) else None
                 object.__setattr__(r, mapping[attr], val)
 
         for r in records:
