@@ -12,6 +12,14 @@ class OverlapSteps[T]:
     boundaries: list[Range]
     annotations: list[set[T]]
 
+    def __post_init__(self):
+        if len(self.boundaries) != len(self.annotations):
+            raise ValueError("Boundaries and annotations must have the same length")
+        if len(self.boundaries) == 0:
+            raise ValueError("Boundaries and annotations must have at least one element")
+        if self.boundaries[0].start != self.rng.start or self.boundaries[-1].end != self.rng.end:
+            raise ValueError("Boundaries must start at the beginning of the range and end at the end of the range")
+
     def __len__(self) -> int:
         return len(self.annotations)
 

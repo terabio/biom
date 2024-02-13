@@ -14,7 +14,7 @@ class Strand(Enum):
         return str(self)
 
     @classmethod
-    def normalize(cls, strand: str | int | 'Strand') -> 'Strand':
+    def normalize(cls, strand: 'str | int | Strand') -> 'Strand':
         match strand:
             case "+" | 1:
                 return Strand.fwd

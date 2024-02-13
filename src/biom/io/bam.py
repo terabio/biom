@@ -155,7 +155,6 @@ class _PEReadsCache:
 
 
 class PEReadsBundler:
-
     def __init__(self, reader: Reader, step: int = 100_000):
         self.reader: Reader = reader
         self.cache: dict[str, _PEReadsCache] = defaultdict(lambda *args: _PEReadsCache([], []))

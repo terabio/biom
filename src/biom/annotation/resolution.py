@@ -45,36 +45,38 @@ type AnnotationWeights[T] = dict[T, float]
 
 
 class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
-    def __init__(self, empty: Any = None, use_empty: bool = True):
+    def __init__(self, empty: Any = None):
         self.empty = empty
-        self.use_empty = use_empty
 
     def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
         """
         The proportional strategy assigns weights to annotation categories based on the proportion of the target ROI
         that overlaps with each category.
         """
+        if len(overlaps) == 0:
+            return {self.empty: 1}
+
         weights, covered, total = {}, 0, 0
         for roiov in overlaps:
             total += len(roiov.rng)  # original ROI length
             for rng, annotations in roiov.to_steps():  # step-wise ROI annotation
                 length = len(rng)
-                if not annotations and self.use_empty:
+                if not annotations:
+                    covered += length
                     weights[self.empty] = weights.get(self.empty, 0) + length
                 else:
                     covered += length
                     for anno in annotations:
                         weights[anno] = weights.get(anno, 0) + length
 
-        assert (self.use_empty and covered == total) or (not self.use_empty and covered <= total)
+        assert covered == total, f"Covered length {covered} does not match total length {total}"
         weights = {anno: weight / covered for anno, weight in weights.items()}
         return weights
 
 
 class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
-    def __init__(self, empty: Any = None, use_empty: bool = True, normalize: bool = False):
+    def __init__(self, empty: Any = None, normalize: bool = False):
         self.empty = empty
-        self.use_empty = use_empty
         self.normalize = normalize
 
     def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
@@ -83,11 +85,19 @@ class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
         overlap between the read block and each category
         """
         categories = set()
+        length, covered = 0, 0
         for blockov in overlaps:
-            categories |= set(blockov.annotations)
+            length += len(blockov.rng)
+            for rng, step in blockov.to_steps():
+                if step:
+                    covered += len(rng)
+                    categories |= step
 
-        if not categories and self.use_empty:
+        if not categories:
             return {self.empty: 1}
+
+        if covered != length:
+            categories.add(self.empty)
 
         weight = 1 / len(categories) if self.normalize else 1
         weights = {cat: weight for cat in categories}

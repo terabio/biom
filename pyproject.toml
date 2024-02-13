@@ -2,6 +2,9 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+exclude = ["test_*.py"]
+
 [project]
 name = "biom"
 version = "0.0.14"
@@ -42,7 +45,9 @@ all = [
     "biom[annotation]",
 ]
 
-
 [project.urls]
 "Homepage" = "https://github.com/alnfedorov/biom"
 "Bug Tracker" = "https://github.com/alnfedorov/biom/issues"
+
+[tool.mypy]
+exclude = ['biom/gindex', 'biom/annotation']

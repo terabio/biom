@@ -33,19 +33,19 @@ class Range:
 
     def __eq__(self, other):
         return (
-            isinstance(other, Range)
-            and self.start == other.start
-            and self.end == other.end
+                isinstance(other, Range)
+                and self.start == other.start
+                and self.end == other.end
         )
 
     def __contains__(self, item: 'Range') -> bool:
         return self.start <= item.start < item.end <= self.end
 
     def overlap(
-        self,
-        other: 'Range' | None = None,
-        start: int | None = None,
-        end: int | None = None,
+            self,
+            other: 'Range | None' = None,
+            start: int | None = None,
+            end: int | None = None,
     ) -> OverlapInfo | None:
         if other is None:
             if start is None or end is None:

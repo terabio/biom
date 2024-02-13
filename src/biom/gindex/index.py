@@ -34,15 +34,15 @@ class Index[T]:
 
         index = self.itrees.get((contig, strand), None)
         if index is None:
-            return Overlap[T](rng, [], [])
+            return Overlap(rng, [], [])
 
         hits, annotation = [], []
-        for it in index.overlap(rng.start, rng.end):
+        for it in sorted(index.overlap(rng.start, rng.end), key=lambda x: x.begin):
             ov = rng.overlap(start=it.begin, end=it.end)
             assert ov is not None
             hits.append(ov.rng)
             annotation.append(it.data)
-        return Overlap[T](rng, hits, annotation)
+        return Overlap(rng, hits, annotation)
 
     def merge(self, *indices: Self, inplace: bool = False) -> Self:
         merged = merge(self, *indices)
