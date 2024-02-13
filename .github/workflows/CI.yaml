@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           # Install the package and all the relevant dependencies
-          python -m pip install '.[all]' mypy
+          python -m pip install '.[all]' mypy pandas-stubs
       - name: Mypy type checks
         run: |
           mypy src
