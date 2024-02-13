@@ -35,7 +35,11 @@ def _simplify(interend, values, sensitivity: float32 = SENSITIVITY):
 
 
 @numba.jit(cache=True, nopython=True, nogil=True)
-def _by_max(ends_of_intervals: List[npt.NDArray[np.int32]], values: List[npt.NDArray[np.float32]], baseline: float32):
+def _by_max(
+    ends_of_intervals: List[npt.NDArray[np.int32]],
+    values: List[npt.NDArray[np.float32]],
+    baseline: float32,
+):
     for p, v in zip(ends_of_intervals, values):
         assert p.size == v.size
 
@@ -106,9 +110,11 @@ def _by_max(ends_of_intervals: List[npt.NDArray[np.int32]], values: List[npt.NDA
             track_nextind = np.delete(track_nextind, indices)
 
             for track in to_drop[:to_drop_total][::-1]:
-                assert track < len(ends_of_intervals) and \
-                       len(ends_of_intervals) == len(values) and \
-                       len(ends_of_intervals) > 0
+                assert (
+                    track < len(ends_of_intervals)
+                    and len(ends_of_intervals) == len(values)
+                    and len(ends_of_intervals) > 0
+                )
                 ends_of_intervals.pop(track)
                 values.pop(track)
 
@@ -121,8 +127,10 @@ def _by_max(ends_of_intervals: List[npt.NDArray[np.int32]], values: List[npt.NDA
 
 
 def by_max(pileups: List[Pileup], baseline: Optional[float32] = None) -> Pileup:
-    assert len(pileups) > 0 and \
-           all(x.id == pileups[0].id and x.interend[-1] == pileups[0].interend[-1] for x in pileups)
+    assert len(pileups) > 0 and all(
+        x.id == pileups[0].id and x.interend[-1] == pileups[0].interend[-1]
+        for x in pileups
+    )
 
     if len(pileups) == 1:
         pileup = pileups[0]
@@ -159,14 +167,22 @@ class MergeByMaxUnitTests(unittest.TestCase):
 
     def test_by_max_inconsistent(self):
         pileups = [
-            Pileup("1", np.asarray([12], dtype=np.int32), np.asarray(9, dtype=np.float32)),
-            Pileup("1", np.asarray([1], dtype=np.int32), np.asarray(1, dtype=np.float32))
+            Pileup(
+                "1", np.asarray([12], dtype=np.int32), np.asarray(9, dtype=np.float32)
+            ),
+            Pileup(
+                "1", np.asarray([1], dtype=np.int32), np.asarray(1, dtype=np.float32)
+            ),
         ]
         self.assertRaises(AssertionError, by_max, pileups, 0)
 
         pileups = [
-            Pileup("1", np.asarray([12], dtype=np.int32), np.asarray(9, dtype=np.float32)),
-            Pileup("2", np.asarray([12], dtype=np.int32), np.asarray(1, dtype=np.float32))
+            Pileup(
+                "1", np.asarray([12], dtype=np.int32), np.asarray(9, dtype=np.float32)
+            ),
+            Pileup(
+                "2", np.asarray([12], dtype=np.int32), np.asarray(1, dtype=np.float32)
+            ),
         ]
         self.assertRaises(AssertionError, by_max, pileups, 0)
 
@@ -194,7 +210,7 @@ class MergeByMaxUnitTests(unittest.TestCase):
     def test_by_max_overlaping_ends(self):
         pileups = [
             [(5, 1), (6, 2), (7, 19), (10, 4), (25, 0)],
-            [(6, 10), (7, 10), (10, 5), (25, 9)]
+            [(6, 10), (7, 10), (10, 5), (25, 9)],
         ]
         expected = [(6, 10), (7, 19), (10, 5), (25, 9)]
         self._test(pileups, 0, expected)
@@ -208,7 +224,7 @@ class MergeByMaxUnitTests(unittest.TestCase):
         pileups = [
             [(1, 0), (4, 3), (6, 2), (8, 9), (10, 0)],
             [(2, 1), (7, 10), (10, 1)],
-            [(4, 3), (6, 1), (8, 8), (10, 1)]
+            [(4, 3), (6, 1), (8, 8), (10, 1)],
         ]
         expected = [(2, 3), (7, 10), (8, 9), (10, 1)]
         self._test(pileups, 0, expected)

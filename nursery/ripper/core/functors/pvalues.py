@@ -11,8 +11,12 @@ FILTERED_PQVALUE = np.float32(-1)
 
 
 # @numba.jit(cache=True, nopython=True, nogil=True)
-def _job(cntends: npt.NDArray[np.int32], cntvalues: npt.NDArray[np.float32],
-         trtends: npt.NDArray[np.int32], trtvalues: npt.NDArray[np.float32]):
+def _job(
+    cntends: npt.NDArray[np.int32],
+    cntvalues: npt.NDArray[np.float32],
+    trtends: npt.NDArray[np.int32],
+    trtvalues: npt.NDArray[np.float32],
+):
     # Chromosome must be identical
     chromsize = cntends[-1]
     assert chromsize == trtends[-1]
@@ -57,7 +61,9 @@ def _job(cntends: npt.NDArray[np.int32], cntvalues: npt.NDArray[np.float32],
             assert cntval >= 0
             key = (trtval, cntval)
             if key not in ptables:
-                ptables[key] = np.float32(-1 * poisson_cdf(trtval - 1, cntval, False, True))
+                ptables[key] = np.float32(
+                    -1 * poisson_cdf(trtval - 1, cntval, False, True)
+                )
 
             pv = ptables[key]
             values[i] = pv
@@ -66,14 +72,17 @@ def _job(cntends: npt.NDArray[np.int32], cntvalues: npt.NDArray[np.float32],
         i += 1
         if bounds[i] == chromsize:
             break
-    bounds, values = bounds[: i + 1], values[: i]
+    bounds, values = bounds[: i + 1], values[:i]
     return bounds, values, pvalue_counts
 
 
 def calculate(workload: pipeline.Results) -> Tuple[Result, Dict[float, int]]:
-    bounds, values, pvcounts = \
-        _job(workload.cntpileup.interend, workload.cntpileup.values,
-             workload.trtpileup.interend, workload.trtpileup.values)
+    bounds, values, pvcounts = _job(
+        workload.cntpileup.interend,
+        workload.cntpileup.values,
+        workload.trtpileup.interend,
+        workload.trtpileup.values,
+    )
 
     track = Result(
         workload.contig, workload.contiglen, workload.trstrand, Track(bounds, values)

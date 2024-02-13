@@ -14,7 +14,7 @@ class BundledFragments:
 
 class BAMPEReader:
     def __init__(self, filename: Path, inflags: int, exflags: int, minmapq: int):
-        self.sf = AlignmentFile(filename, 'rb')
+        self.sf = AlignmentFile(filename, "rb")
         self.iterator = self.sf
 
         self.inflags = inflags
@@ -23,24 +23,30 @@ class BAMPEReader:
 
         self.cache = defaultdict(lambda *args: BundledFragments([], []))
 
-    def fetch(self, contig: str, start: Optional[int] = None, end: Optional[int] = None) -> 'BAMPEReader':
+    def fetch(
+        self, contig: str, start: Optional[int] = None, end: Optional[int] = None
+    ) -> "BAMPEReader":
         self.iterator = self.sf.fetch(contig, start, end)
         return self
 
-    def makepairs(self, fragments: BundledFragments) -> List[Tuple[AlignedSegment, AlignedSegment]]:
+    def makepairs(
+        self, fragments: BundledFragments
+    ) -> List[Tuple[AlignedSegment, AlignedSegment]]:
         pairs = []
         missed_lmates = []
         for lmate in fragments.lmates:
             mate_found = False
             for ind, rmate in enumerate(fragments.rmates):
-                if lmate.next_reference_id == rmate.reference_id and \
-                        lmate.next_reference_start == rmate.reference_start and \
-                        lmate.mate_is_reverse == rmate.is_reverse and \
-                        lmate.mate_is_mapped == rmate.is_mapped and \
-                        rmate.next_reference_id == lmate.reference_id and \
-                        rmate.next_reference_start == lmate.reference_start and \
-                        rmate.mate_is_reverse == lmate.is_reverse and \
-                        rmate.mate_is_mapped == lmate.is_mapped:
+                if (
+                    lmate.next_reference_id == rmate.reference_id
+                    and lmate.next_reference_start == rmate.reference_start
+                    and lmate.mate_is_reverse == rmate.is_reverse
+                    and lmate.mate_is_mapped == rmate.is_mapped
+                    and rmate.next_reference_id == lmate.reference_id
+                    and rmate.next_reference_start == lmate.reference_start
+                    and rmate.mate_is_reverse == lmate.is_reverse
+                    and rmate.mate_is_mapped == lmate.is_mapped
+                ):
                     mate_found = True
                     break
 
@@ -55,10 +61,12 @@ class BAMPEReader:
     def __iter__(self):
         for ind, segment in enumerate(self.iterator):  # type: (int, AlignedSegment)
             # some required flags were not set OR some excluded flags were set
-            if not segment.is_paired or \
-                    segment.flag & self.inflags != self.inflags or \
-                    segment.flag & self.exflags != 0 or \
-                    segment.mapq < self.minmapq:
+            if (
+                not segment.is_paired
+                or segment.flag & self.inflags != self.inflags
+                or segment.flag & self.exflags != 0
+                or segment.mapping_quality < self.minmapq
+            ):
                 continue
 
             cached = self.cache[segment.query_name]

@@ -10,15 +10,15 @@ from .config import Scaling
 
 def median_of_ratios(bins: Path, treatment: List[str], control: List[str]) -> Scaling:
     bins = np.load(bins.as_posix())
-    df = pd.DataFrame(data=bins['matrix'], columns=bins['labels'])
-    df['treatment'] = df[treatment].sum(axis=1)
-    df['control'] = df[control].sum(axis=1)
-    df = df[['treatment', 'control']]
+    df = pd.DataFrame(data=bins["matrix"], columns=bins["labels"])
+    df["treatment"] = df[treatment].sum(axis=1)
+    df["control"] = df[control].sum(axis=1)
+    df = df[["treatment", "control"]]
 
     df = df[(df > 0).all(axis=1)].copy()
 
-    df['GeometricMean'] = df.apply(stats.gmean, axis=1)
+    df["GeometricMean"] = df.apply(stats.gmean, axis=1)
 
-    trtscale = (df['treatment'] / df['GeometricMean']).median()
-    cntscale = (df['control'] / df['GeometricMean']).median()
+    trtscale = (df["treatment"] / df["GeometricMean"]).median()
+    cntscale = (df["control"] / df["GeometricMean"]).median()
     return Scaling(np.float32(1 / trtscale), np.float32(1 / cntscale))

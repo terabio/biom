@@ -28,8 +28,12 @@ class Results:
     tags: Any
 
 
-def _genome(contig: str, contiglen: np.int32,
-            blocks: List[fragments.AlignedBlocks], extensions: List[int]) -> pileup.Pileup:
+def _genome(
+    contig: str,
+    contiglen: np.int32,
+    blocks: List[fragments.AlignedBlocks],
+    extensions: List[int],
+) -> pileup.Pileup:
     if len(blocks) == 0:
         return pileup.Pileup.constant(contig, contiglen, np.float32(0))
 
@@ -39,24 +43,32 @@ def _genome(contig: str, contiglen: np.int32,
 
 def run(workload: Workload) -> Results:
     extsize = workload.params.extsize[workload.contig]
-    assert extsize and all(x >= 0 for x in extsize), f"Invalid extsize({extsize}) for contig {workload.contig}"
+    assert extsize and all(
+        x >= 0 for x in extsize
+    ), f"Invalid extsize({extsize}) for contig {workload.contig}"
 
     # Load fragments
     blocks, contiglen = fragments.loadfrom(
-        workload.bamfiles, fragments.strdeductors.get(workload.params.stranding), workload.contig,
-        workload.params.inflags, workload.params.exflags, workload.params.minmapq
+        workload.bamfiles,
+        fragments.strdeductors.get(workload.params.stranding),
+        workload.contig,
+        workload.params.inflags,
+        workload.params.exflags,
+        workload.params.minmapq,
     )
     contiglen = np.int32(contiglen)
-    total_fragments = sum(x.fragments() for x in blocks.fwd) + sum(x.fragments() for x in blocks.rev)
+    total_fragments = sum(x.fragments() for x in blocks.fwd) + sum(
+        x.fragments() for x in blocks.rev
+    )
 
     genomic = Stranded(
         fwd=_genome(workload.contig, contiglen, blocks.fwd, extsize),
-        rev=_genome(workload.contig, contiglen, blocks.rev, extsize)
+        rev=_genome(workload.contig, contiglen, blocks.rev, extsize),
     )
     return Results(
         contig=workload.contig,
         contiglen=contiglen,
         fragments=total_fragments,
         genomic=genomic,
-        tags=workload.tags
+        tags=workload.tags,
     )

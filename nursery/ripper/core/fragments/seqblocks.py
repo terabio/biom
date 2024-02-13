@@ -44,7 +44,9 @@ class AlignedBlocks:
     records: npt.NDArray[np.int32]
 
     @staticmethod
-    def from_tuples(trstrand: str, reads: List[List[Tuple[int, int]]]) -> 'AlignedBlocks':
+    def from_tuples(
+        trstrand: str, reads: List[List[Tuple[int, int]]]
+    ) -> "AlignedBlocks":
         assert trstrand == "+" or trstrand == "-"
         starts, ends, index, i = [], [], [], 0
         for read in reads:
@@ -58,7 +60,7 @@ class AlignedBlocks:
             trstrand,
             np.asarray(starts, dtype=np.int32),
             np.asarray(ends, dtype=np.int32),
-            np.asarray(index, dtype=np.int32)
+            np.asarray(index, dtype=np.int32),
         )
 
     def fragments(self):
@@ -108,8 +110,13 @@ class AlignedBlocksBuilder:
         self.index.append(self.blockind)
 
         # Sort blocks by a start position and convert them to np arrays
-        argsort = sorted(range(len(self.index) - 1), key=lambda ind: self.start[self.index[ind]])
-        npstart, npend, npind = [np.empty(x, dtype=np.int32) for x in (len(self.start), len(self.end), len(self.index))]
+        argsort = sorted(
+            range(len(self.index) - 1), key=lambda ind: self.start[self.index[ind]]
+        )
+        npstart, npend, npind = [
+            np.empty(x, dtype=np.int32)
+            for x in (len(self.start), len(self.end), len(self.index))
+        ]
 
         blockind, trind = 0, 0
         for ind in argsort:
@@ -117,10 +124,10 @@ class AlignedBlocksBuilder:
             npind[trind] = blockind
 
             _start, _end = self.index[ind], self.index[ind + 1]
-            blstart, blend = self.start[_start: _end], self.end[_start: _end]
+            blstart, blend = self.start[_start:_end], self.end[_start:_end]
             size = _end - _start
-            npstart[blockind: blockind + size] = blstart
-            npend[blockind: blockind + size] = blend
+            npstart[blockind : blockind + size] = blstart
+            npend[blockind : blockind + size] = blend
 
             blockind += size
             trind += 1
@@ -130,7 +137,7 @@ class AlignedBlocksBuilder:
 
 
 def _oncontig(
-        reader: BAMPEReader, strdeductor: StrandDeductor
+    reader: BAMPEReader, strdeductor: StrandDeductor
 ) -> Tuple[Optional[AlignedBlocks], Optional[AlignedBlocks]]:
     forward, reverse = AlignedBlocksBuilder("+"), AlignedBlocksBuilder("-")
 
@@ -147,8 +154,12 @@ def _oncontig(
 
 
 def loadfrom(
-        files: List[Path], strdeductor: StrandDeductor, contig: str, inflags: int,
-        exflags: int, minmapq: int
+    files: List[Path],
+    strdeductor: StrandDeductor,
+    contig: str,
+    inflags: int,
+    exflags: int,
+    minmapq: int,
 ) -> Tuple[Stranded[List[AlignedBlocks]], int]:
     assert files
 
@@ -174,5 +185,7 @@ def loadfrom(
 
     assert contiglens, files
     contiglen = contiglens[0]
-    assert all(contiglen == x for x in contiglens), f"Contradictory contig length for '{contig}': {contiglens}"
+    assert all(
+        contiglen == x for x in contiglens
+    ), f"Contradictory contig length for '{contig}': {contiglens}"
     return Stranded(forward, reverse), contiglen

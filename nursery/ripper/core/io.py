@@ -16,7 +16,7 @@ def _tobigwig(tracks: List[Result], bw: Path):
     # At most one record per contig
     assert len(set(x.contig for x in tracks)) == len(tracks)
 
-    bw: pyBigWig.pyBigWig = pyBigWig.open(bw.as_posix(), 'w')
+    bw: pyBigWig.pyBigWig = pyBigWig.open(bw.as_posix(), "w")
 
     # Sort by contig name
     tracks = sorted(tracks, key=lambda x: x.contig)
@@ -37,7 +37,7 @@ def _tobigwig(tracks: List[Result], bw: Path):
 def tobigwig(tracks: List[Result], folder: Path, title: str) -> Stranded[Path]:
     saveto = Stranded(
         fwd=folder.joinpath(f"{title}.fwd.bigWig"),
-        rev=folder.joinpath(f"{title}.rev.bigWig")
+        rev=folder.joinpath(f"{title}.rev.bigWig"),
     )
     stranded = Stranded(fwd=[], rev=[])
     for t in tracks:
@@ -64,8 +64,10 @@ def tobed(peaks: List[callpeaks.Peak], saveto: Path):
     # qValue - Measurement of statistical significance using false discovery rate (-log10). Use -1 if no qValue is assigned.
     # peak - Point-source called for this peak; 0-based offset from chromStart. Use -1 if no point-source called.
 
-    with open(saveto, 'w') as stream:
+    with open(saveto, "w") as stream:
         for p in peaks:
             center = sum(p.summit) // len(p.summit)
-            stream.write(f"{p.contig}\t{p.start}\t{p.end}\t.\t0\t"
-                         f"{p.strand}\t{p.fe}\t{p.pvalue}\t{p.qvalue}\t{center - p.start}\n")
+            stream.write(
+                f"{p.contig}\t{p.start}\t{p.end}\t.\t0\t"
+                f"{p.strand}\t{p.fe}\t{p.pvalue}\t{p.qvalue}\t{center - p.start}\n"
+            )

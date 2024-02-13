@@ -30,7 +30,11 @@ class Results:
 
 def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     # Parse BAM contigs
-    contigs = config.contigs if config.contigs else fetch_contigs(config.treatment + config.control)
+    contigs = (
+        config.contigs
+        if config.contigs
+        else fetch_contigs(config.treatment + config.control)
+    )
 
     # Build & run pileup workloads
     workloads = []
@@ -38,19 +42,27 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
         CONTROL: config.process,
         # Disable extension for treatment
         TREATMENT: PeakCallingConfig.ProcessingParams(
-            config.process.stranding, config.process.scaling,
-            defaultdict(lambda *args: [0]), config.process.threads, config.process.backend,
-            config.process.inflags, config.process.exflags, config.process.minmapq
-        )
+            config.process.stranding,
+            config.process.scaling,
+            defaultdict(lambda *args: [0]),
+            config.process.threads,
+            config.process.backend,
+            config.process.inflags,
+            config.process.exflags,
+            config.process.minmapq,
+        ),
     }
     for contig in contigs:
-        for tag, files in {TREATMENT: config.treatment, CONTROL: config.control}.items():
-            workloads.append(pileup.Workload(
-                contig=contig, bamfiles=files, params=prconfigs[tag], tags=tag
-            ))
-    results: List[pileup.Results] = pool(
-        delayed(pileup.run)(w) for w in workloads
-    )
+        for tag, files in {
+            TREATMENT: config.treatment,
+            CONTROL: config.control,
+        }.items():
+            workloads.append(
+                pileup.Workload(
+                    contig=contig, bamfiles=files, params=prconfigs[tag], tags=tag
+                )
+            )
+    results: List[pileup.Results] = pool(delayed(pileup.run)(w) for w in workloads)
 
     # Calculate baseline values
     trtfragments = sum(x.fragments for x in results if x.tags == TREATMENT)
@@ -58,13 +70,15 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
 
     gmbaseline = cntfragments / config.geffsize
     print(f"Treatment fragments: {trtfragments}, Control fragments: {cntfragments}")
-    print(f"Treatment scaling: {config.process.scaling.treatment}, "
-          f"Control scaling: {config.process.scaling.control}")
+    print(
+        f"Treatment scaling: {config.process.scaling.treatment}, "
+        f"Control scaling: {config.process.scaling.control}"
+    )
     logging.info(f"Genome baseline: {gmbaseline}")
 
     # Build & run postprocess workloads
     workloads = []
-    baselines = {TREATMENT: (0., config.callp.mintrtfrag), CONTROL: (gmbaseline, 0.)}
+    baselines = {TREATMENT: (0.0, config.callp.mintrtfrag), CONTROL: (gmbaseline, 0.0)}
     for r in results:
         gmbaseline, minfragments = baselines[r.tags]
 
@@ -74,9 +88,14 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
             assert r.tags == CONTROL
             scale = config.process.scaling.control
 
-        workloads.append(postprocess.Workload(
-            pileup=r, gmbaseline=gmbaseline, scale=scale, minfragments=np.float32(minfragments)
-        ))
+        workloads.append(
+            postprocess.Workload(
+                pileup=r,
+                gmbaseline=gmbaseline,
+                scale=scale,
+                minfragments=np.float32(minfragments),
+            )
+        )
     results: List[postprocess.Result] = pool(
         delayed(postprocess.run)(w) for w in workloads
     )
@@ -86,11 +105,11 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     regrouped = defaultdict(dict)
     for r in results:
         # Forward
-        key = (r.contig, r.contiglen, '+')
+        key = (r.contig, r.contiglen, "+")
         assert key not in regrouped or r.tags not in regrouped[key]
         regrouped[key][r.tags] = r.pileup.fwd
         # Reverse
-        key = (r.contig, r.contiglen, '-')
+        key = (r.contig, r.contiglen, "-")
         assert key not in regrouped or r.tags not in regrouped[key]
         regrouped[key][r.tags] = r.pileup.rev
 
@@ -99,10 +118,17 @@ def run(config: PeakCallingConfig, pool: Parallel) -> List[Results]:
     for (contig, contiglen, trstrand), pileups in regrouped.items():
         if CONTROL not in pileups or TREATMENT not in pileups:
             nonein = "control" if CONTROL not in pileups else "treatment"
-            logging.warning(f"No {nonein} fragments for contig {contig}, strand {trstrand}")
+            logging.warning(
+                f"No {nonein} fragments for contig {contig}, strand {trstrand}"
+            )
             continue
-        results.append(Results(
-            contig=contig, contiglen=contiglen, trstrand=trstrand,
-            trtpileup=pileups[TREATMENT], cntpileup=pileups[CONTROL]
-        ))
+        results.append(
+            Results(
+                contig=contig,
+                contiglen=contiglen,
+                trstrand=trstrand,
+                trtpileup=pileups[TREATMENT],
+                cntpileup=pileups[CONTROL],
+            )
+        )
     return results

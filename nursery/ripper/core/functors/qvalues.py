@@ -53,6 +53,8 @@ def apply_pqtable(pvalues: Result, table: Dict[float, float]) -> Result:
         else:
             qv[i] = table[pv[i]]
     return Result(
-        pvalues.contig, pvalues.contiglen, pvalues.trstrand,
-        Track(pvalues.track.bounds, qv)
+        pvalues.contig,
+        pvalues.contiglen,
+        pvalues.trstrand,
+        Track(pvalues.track.bounds, qv),
     )

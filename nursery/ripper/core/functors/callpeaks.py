@@ -17,8 +17,9 @@ class Context:
     foldenrichment: Track
 
     def __post_init__(self):
-        assert np.all(self.qvalues.bounds == self.foldenrichment.bounds) and \
-               np.all(self.qvalues.bounds == self.pvalues.bounds)
+        assert np.all(self.qvalues.bounds == self.foldenrichment.bounds) and np.all(
+            self.qvalues.bounds == self.pvalues.bounds
+        )
 
 
 @dataclass(frozen=True)
@@ -31,14 +32,15 @@ class PeakCalingWorkload:
     ctx: Context
 
     @staticmethod
-    def build(pv: List[Result],
-              qv: List[Result],
-              fe: List[Result],
-              params: PeakCallingParams) -> List['PeakCalingWorkload']:
+    def build(
+        pv: List[Result], qv: List[Result], fe: List[Result], params: PeakCallingParams
+    ) -> List["PeakCalingWorkload"]:
         # Group by chromosomes
-        assert set((x.contig, x.trstrand) for x in pv) == \
-               set((x.contig, x.trstrand) for x in qv) == \
-               set((x.contig, x.trstrand) for x in fe)
+        assert (
+            set((x.contig, x.trstrand) for x in pv)
+            == set((x.contig, x.trstrand) for x in qv)
+            == set((x.contig, x.trstrand) for x in fe)
+        )
         assert len(pv) == len(qv) == len(fe)
         grouped = defaultdict(dict)
         for key, data in {"pv": pv, "qv": qv, "fe": fe}.items():
@@ -48,7 +50,7 @@ class PeakCalingWorkload:
         # Build workloads
         workloads = []
         for (contig, trstrand), data in grouped.items():
-            pv, qv, fe = data.pop('pv'), data.pop('qv'), data.pop('fe')
+            pv, qv, fe = data.pop("pv"), data.pop("qv"), data.pop("fe")
             ctx = Context(qv.track, pv.track, fe.track)
             workloads.append(
                 PeakCalingWorkload(contig, pv.contiglen, trstrand, params, ctx)
@@ -66,7 +68,11 @@ class PeakPiece:
 
 
 def _stitch(
-        pieces: List[PeakPiece], contig: str, strand: str, params: PeakCallingParams, ctx: Context
+    pieces: List[PeakPiece],
+    contig: str,
+    strand: str,
+    params: PeakCallingParams,
+    ctx: Context,
 ) -> Optional[Peak]:
     if not pieces:
         return None
@@ -86,8 +92,7 @@ def _stitch(
     x = max(pieces, key=lambda x: x.qvalue)
     minqv, minpv = x.qvalue, x.pvalue
     return Peak(
-        contig, pieces[0].start, pieces[-1].end, strand,
-        minpv, minqv, maxfe, summits
+        contig, pieces[0].start, pieces[-1].end, strand, minpv, minqv, maxfe, summits
     )
 
 
@@ -106,7 +111,11 @@ def calculate(w: PeakCalingWorkload) -> List[Peak]:
     if peakind.size == 0:
         return []
 
-    qv, pv, fe = w.ctx.qvalues.values[peakind], w.ctx.pvalues.values[peakind], w.ctx.foldenrichment.values[peakind]
+    qv, pv, fe = (
+        w.ctx.qvalues.values[peakind],
+        w.ctx.pvalues.values[peakind],
+        w.ctx.foldenrichment.values[peakind],
+    )
     starts, ends = w.ctx.qvalues.bounds[peakind], w.ctx.qvalues.bounds[peakind + 1]
 
     result = []

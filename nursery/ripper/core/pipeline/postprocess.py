@@ -34,15 +34,21 @@ def calcscaling(trtfragments: int, cntfragments: int) -> Tuple[str, np.float32]:
     if trtfragments > cntfragments:
         scale = cntfragments / trtfragments
         scalelib = "treatment"
-        logging.info(f"Treatment ({trtfragments}) is large than control ({cntfragments}), scaling multiplier: {scale}")
+        logging.info(
+            f"Treatment ({trtfragments}) is large than control ({cntfragments}), scaling multiplier: {scale}"
+        )
     else:
         scale = trtfragments / cntfragments
         scalelib = "control"
-        logging.info(f"Control ({cntfragments}) is large than treatment ({trtfragments}), scaling multiplier: {scale}")
+        logging.info(
+            f"Control ({cntfragments}) is large than treatment ({trtfragments}), scaling multiplier: {scale}"
+        )
     return scalelib, np.float32(scale)
 
 
-def _normalize(p: Stranded[pileup.Pileup], scale: Optional[np.float32]) -> Stranded[pileup.Pileup]:
+def _normalize(
+    p: Stranded[pileup.Pileup], scale: Optional[np.float32]
+) -> Stranded[pileup.Pileup]:
     if scale:
         p.fwd.values *= scale
         p.rev.values *= scale
@@ -69,5 +75,5 @@ def run(workload: Workload) -> Result:
         contig=workload.pileup.contig,
         contiglen=workload.pileup.contiglen,
         pileup=result,
-        tags=workload.pileup.tags
+        tags=workload.pileup.tags,
     )

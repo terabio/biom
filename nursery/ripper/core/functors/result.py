@@ -39,7 +39,7 @@ class Track:
         if right - 1 == left:
             argmax = left
         else:
-            argmax = self.values[left: right].argmax() + left
+            argmax = self.values[left:right].argmax() + left
         # Middle of the region
         return (self.bounds[argmax] + self.bounds[argmax + 1]) // 2, self.values[argmax]
 
@@ -53,7 +53,7 @@ class Result:
     track: Track
 
     @staticmethod
-    def from_pileup(pileup: Pileup, contiglen: int, trstrand: str) -> 'Result':
+    def from_pileup(pileup: Pileup, contiglen: int, trstrand: str) -> "Result":
         track = Track.from_pileup(pileup.interend, pileup.values)
         return Result(pileup.id, contiglen, trstrand, track)
 
