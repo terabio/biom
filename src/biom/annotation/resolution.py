@@ -12,10 +12,10 @@ class Resolution[I, O](ABC):
     def __call__(self, data: I) -> O:
         pass
 
-    def chain[T](self, other: Resolution[O, T]) -> Resolution[I, T]:
+    def chain[T](self, other: 'Resolution[O, T]') -> 'Resolution[I, T]':
         return ResolutionChain(self, other)
 
-    def apply[T](self, nxt: Callable[[O], T] | Resolution[O, T]) -> Resolution[I, T]:
+    def apply[T](self, nxt: Callable[[O], T] | 'Resolution[O, T]') -> 'Resolution[I, T]':
         if isinstance(nxt, Resolution):
             return ResolutionChain(self, nxt)
         elif isinstance(nxt, Callable):

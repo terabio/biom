@@ -1,8 +1,5 @@
-from typing import Iterable
-
 from biom.annotation.resolution import Resolution, AnnotationWeights
 from biom.annotation.source import Source
-from biom.common import Range
 from biom.gindex import Index, overlap
 
 
@@ -22,12 +19,11 @@ class Annotator[A]:
         self.strategy = strategy
 
     def annotate(self, contig: str, strand: str, start: int, end: int) -> AnnotationWeights[A]:
-        results = {}
-        for blocks in self.source.fetch(contig, start, end):
-            pass
+        # results = {}
+        # for blocks in self.source.fetch(contig, start, end):
+        #     pass
+        raise NotImplementedError("Not implemented yet")
 
-    def annotate(self, contig: str, strand: str, blocks: Iterable[Range]) -> AnnotationWeights:
-        overlaps = [self.index.overlap(contig, strand, bl.start, bl.end) for bl in blocks]
-        return self.strategy(overlaps)
-
-# How to deal with multimappers?
+    # def annotate(self, contig: str, strand: str, blocks: Iterable[Range]) -> AnnotationWeights:
+    #     overlaps = [self.index.overlap(contig, strand, bl.start, bl.end) for bl in blocks]
+    #     return self.strategy(overlaps)
