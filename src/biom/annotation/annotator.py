@@ -24,8 +24,7 @@ class Annotator[A]:
     def annotate(self, contig: str, strand: str, start: int, end: int) -> AnnotationWeights[A]:
         results = {}
         for blocks in self.source.fetch(contig, start, end):
-
-        pass
+            pass
 
     def annotate(self, contig: str, strand: str, blocks: Iterable[Range]) -> AnnotationWeights:
         overlaps = [self.index.overlap(contig, strand, bl.start, bl.end) for bl in blocks]

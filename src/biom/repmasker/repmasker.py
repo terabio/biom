@@ -5,7 +5,7 @@ from pathlib import Path
 class RepmaskerClassification:
     def __init__(self, path: Path):
         self.path = path
-        self._mapping = {}
+        self._mapping: dict[str, tuple[str, str, str]] = {}
 
         with gzip.open(path, "rt") as stream:
             for line in stream:

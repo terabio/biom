@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Self, Literal
+from typing import Literal
 
 
 class Strand(Enum):
@@ -14,14 +14,14 @@ class Strand(Enum):
         return str(self)
 
     @classmethod
-    def normalize(cls, strand: str | int | Self) -> Self:
+    def normalize(cls, strand: str | int | 'Strand') -> 'Strand':
         match strand:
             case "+" | 1:
-                return cls.fwd
+                return Strand.fwd
             case "-" | -1:
-                return cls.rev
+                return Strand.rev
             case "." | 0:
-                return cls.unknown
+                return Strand.unknown
             case _ if isinstance(strand, cls):
                 return strand
             case _:

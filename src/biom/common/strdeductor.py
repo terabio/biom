@@ -1,10 +1,6 @@
 from typing import Callable, Literal, Any
 
-try:
-    from pysam import AlignedSegment as _AlignedSegment
-except ImportError:
-    _AlignedSegment = Any
-
+_AlignedSegment = Any # pysam.AlignedSegment
 StrandDeductor = Callable[[_AlignedSegment], Literal["+", "-"]]
 
 
@@ -29,6 +25,8 @@ def _f(read: _AlignedSegment) -> Literal["+", "-"]:
             return "+"
         case False:
             return "-"
+        case _:
+            assert False, "Unreachable"
 
 
 def _s(read: _AlignedSegment) -> Literal["+", "-"]:
@@ -38,6 +36,8 @@ def _s(read: _AlignedSegment) -> Literal["+", "-"]:
             return "-"
         case False:
             return "+"
+        case _:
+            assert False, "Unreachable"
 
 
 def _fs(read: _AlignedSegment) -> Literal["+", "-"]:
@@ -52,6 +52,8 @@ def _fs(read: _AlignedSegment) -> Literal["+", "-"]:
             return "-"
         case (False, False):
             return "+"
+        case _:
+            assert False, "Unreachable"
 
 
 def _sf(read: _AlignedSegment) -> Literal["+", "-"]:
@@ -66,3 +68,5 @@ def _sf(read: _AlignedSegment) -> Literal["+", "-"]:
             return "+"
         case (False, False):
             return "-"
+        case _:
+            assert False, "Unreachable"

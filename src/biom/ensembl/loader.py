@@ -1,5 +1,5 @@
 import json
-from enum import EnumMeta
+from enum import EnumMeta, Enum
 from pathlib import Path
 from typing import Self
 
@@ -19,11 +19,11 @@ LATEST = 110
 
 class Loader:
     def __init__(
-        self,
-        name: str,
-        organism: str,
-        version: int,
-        cache: Path | None = None,
+            self,
+            name: str,
+            organism: str,
+            version: int,
+            cache: Path | None = None,
     ):
         self._assembly = name
         self._organism = organism
@@ -49,9 +49,9 @@ class Loader:
                 raise ValueError(f"Unknown schema version {self._meta['schema']}")
 
             if (
-                self._meta["organism"] != organism
-                or self._meta["name"] != name
-                or self._meta["version"] != version
+                    self._meta["organism"] != organism
+                    or self._meta["name"] != name
+                    or self._meta["version"] != version
             ):
                 raise ValueError(
                     f"Meta information mismatch: {self._meta} != {organism}, {name}, {version}. "
@@ -100,10 +100,10 @@ class Loader:
         return self.finalize()
 
     def with_transcripts(
-        self,
-        attributes: set[transcript.Attribute],
-        fetch: bool = False,
-        verbose: bool = True,
+            self,
+            attributes: set[transcript.Attribute],
+            fetch: bool = False,
+            verbose: bool = True,
     ) -> Self:
         path = self._cache / "transcript-attributes.tsv.gz"
         self._load_attributes(
@@ -118,7 +118,7 @@ class Loader:
         return self
 
     def with_genes(
-        self, attributes: set[gene.Attribute], fetch: bool = False, verbose: bool = True
+            self, attributes: set[gene.Attribute], fetch: bool = False, verbose: bool = True
     ) -> Self:
         path = self._cache / "gene-attributes.tsv.gz"
         self._load_attributes(
@@ -133,15 +133,15 @@ class Loader:
         )
 
     def _load_attributes(
-        self,
-        path: Path,
-        key: str,
-        enum: EnumMeta,
-        attributes: set,
-        fetch: bool,
-        verbose: bool,
+            self,
+            path: Path,
+            key: str,
+            enum: EnumMeta,
+            attributes: set,
+            fetch: bool,
+            verbose: bool,
     ):
-        cached = {enum[x] for x in self._meta["cached"][key]}
+        cached: set[Enum] = {enum[x] for x in self._meta["cached"][key]}
 
         # Check if we need to fetch the data
         if attributes.issubset(cached):
@@ -154,7 +154,7 @@ class Loader:
 
         # Fetch the data
         all_attributes = cached | attributes
-        enum.fetch(
+        enum.fetch(  # type: ignore
             all_attributes,
             self._organism,
             path,

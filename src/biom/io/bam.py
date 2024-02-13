@@ -73,7 +73,7 @@ class ConsumedReads:
 class Reader:
     def __init__(self, filename: Path, inflags: int, exflags: int, minmapq: int, *, statistics: bool = False):
         self.filename: Path = filename
-        self.sf: AlignmentFile = AlignmentFile(filename, "rb")
+        self.sf: AlignmentFile = AlignmentFile(filename.as_posix(), "rb")
         self.iterator: Iterable[AlignedSegment] = self.sf
         self.inflags: int = inflags
         self.exflags: int = exflags
@@ -95,6 +95,8 @@ class Reader:
         )
 
     def _iter_with_statistics(self) -> Iterator[AlignedSegment]:
+        assert self.consumed is not None and self.discarded is not None
+
         for segment in self.iterator:
             if self._is_read_ok(segment):
                 self.consumed.count(segment)
@@ -167,7 +169,10 @@ class PEReadsBundler:
 
     def __iter__(self) -> Iterator[tuple[AlignedSegment, AlignedSegment]]:
         for ind, segment in enumerate(self.reader):
-            cached = self.cache[segment.query_name]
+            qname = segment.query_name
+            assert qname is not None, "Query name must be present in the BAM file"
+
+            cached = self.cache[qname]
             if segment.is_read1:
                 cached.lmates.append(segment)
             else:

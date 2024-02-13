@@ -15,8 +15,7 @@ def fetch(query: str, url: str, saveto: Path, force: bool, verbose: bool):
     saveto.unlink(missing_ok=True)
     saveto.parent.mkdir(parents=True, exist_ok=True)
 
-    query = [x.strip() for x in query.split("\n")]
-    query = "".join(query)
+    query = "".join([x.strip() for x in query.split("\n")])
 
     url = f"{url}/biomart/martservice?query={query}"
     ungzipped = saveto.with_suffix("")
