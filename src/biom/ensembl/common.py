@@ -6,7 +6,15 @@ from typing import Self
 
 class EnsemblAttribute(Enum):
     @classmethod
-    def fetch(cls, attributes: set[Self], organism: str, saveto: Path, force: bool, url: str, verbose: bool):
+    def fetch(
+        cls,
+        attributes: set[Self],
+        organism: str,
+        saveto: Path,
+        force: bool,
+        url: str,
+        verbose: bool,
+    ):
         raise ValueError("Not implemented")
 
     @property

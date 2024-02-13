@@ -1,8 +1,11 @@
-from typing import Callable, Literal
+from typing import Callable, Literal, Any
 
-from pysam import AlignedSegment
+try:
+    from pysam import AlignedSegment as _AlignedSegment
+except ImportError:
+    _AlignedSegment = Any
 
-StrandDeductor = Callable[[AlignedSegment], Literal["+", "-"]]
+StrandDeductor = Callable[[_AlignedSegment], Literal["+", "-"]]
 
 
 def get(protocol: Literal["f/s", "s/f", "f", "s"]) -> StrandDeductor:
@@ -19,7 +22,7 @@ def get(protocol: Literal["f/s", "s/f", "f", "s"]) -> StrandDeductor:
             raise ValueError(f"Unknown stranding protocol: {protocol}")
 
 
-def _f(read: AlignedSegment) -> str:
+def _f(read: _AlignedSegment) -> Literal["+", "-"]:
     # Flip the mapped strand
     match read.is_reverse:
         case True:
@@ -28,7 +31,7 @@ def _f(read: AlignedSegment) -> str:
             return "-"
 
 
-def _s(read: AlignedSegment) -> str:
+def _s(read: _AlignedSegment) -> Literal["+", "-"]:
     # Keep the mapped strand
     match read.is_reverse:
         case True:
@@ -37,7 +40,7 @@ def _s(read: AlignedSegment) -> str:
             return "+"
 
 
-def _fs(read: AlignedSegment) -> str:
+def _fs(read: _AlignedSegment) -> Literal["+", "-"]:
     match (read.is_read1, read.is_reverse):
         # First mate -> flip its strand
         case (True, True):
@@ -51,7 +54,7 @@ def _fs(read: AlignedSegment) -> str:
             return "+"
 
 
-def _sf(read: AlignedSegment) -> str:
+def _sf(read: _AlignedSegment) -> Literal["+", "-"]:
     match (read.is_read1, read.is_reverse):
         # First mate -> keep its strand
         case (True, True):

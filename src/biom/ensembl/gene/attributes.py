@@ -40,7 +40,13 @@ class Attribute(EnsemblAttribute):
     @property
     def dtype(self):
         match self:
-            case Attribute.ID | Attribute.Name | Attribute.Biotype | Attribute.Source | Attribute.Contig:
+            case (
+                Attribute.ID
+                | Attribute.Name
+                | Attribute.Biotype
+                | Attribute.Source
+                | Attribute.Contig
+            ):
                 return str
             case Attribute.Start | Attribute.End | Attribute.Strand:
                 return int
@@ -49,7 +55,13 @@ class Attribute(EnsemblAttribute):
 
     @classmethod
     def fetch(
-            cls, attributes: set[Self], organism: str, saveto: Path, force: bool, url: str, verbose: bool
+        cls,
+        attributes: set[Self],
+        organism: str,
+        saveto: Path,
+        force: bool,
+        url: str,
+        verbose: bool,
     ):
         requested = []
         for attr in attributes:
@@ -75,8 +87,8 @@ class Attribute(EnsemblAttribute):
                 case _:
                     raise ValueError(f"Unknown attribute: {attr}")
 
-        requested = [f"<Attribute name = \"{x}\" />" for x in requested]
-        requested = '\n'.join(requested)
+        requested = [f'<Attribute name = "{x}" />' for x in requested]
+        requested = "\n".join(requested)
         query = f"""
             <?xml version="1.0" encoding="UTF-8"?>
             <!DOCTYPE Query>

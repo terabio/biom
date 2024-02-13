@@ -58,10 +58,20 @@ class Attribute(EnsemblAttribute):
     @property
     def dtype(self) -> Any:
         match self:
-            case Attribute.ID | Attribute.Gene | Attribute.Name | Attribute.Biotype | \
-                 Attribute.Source | Attribute.SupportLevel:
+            case (
+                Attribute.ID
+                | Attribute.Gene
+                | Attribute.Name
+                | Attribute.Biotype
+                | Attribute.Source
+                | Attribute.SupportLevel
+            ):
                 return str
-            case Attribute.MANESelect | Attribute.MANEPlusClinical | Attribute.GENCODEbasic:
+            case (
+                Attribute.MANESelect
+                | Attribute.MANEPlusClinical
+                | Attribute.GENCODEbasic
+            ):
                 return str
             case Attribute.EnsemblCanonical:
                 return "boolean"
@@ -74,7 +84,13 @@ class Attribute(EnsemblAttribute):
 
     @classmethod
     def fetch(
-            cls, attributes: set[Self], organism: str, saveto: Path, force: bool, url: str, verbose: bool
+        cls,
+        attributes: set[Self],
+        organism: str,
+        saveto: Path,
+        force: bool,
+        url: str,
+        verbose: bool,
     ):
         requested = []
         for attr in attributes:
@@ -110,8 +126,8 @@ class Attribute(EnsemblAttribute):
                 case _:
                     raise ValueError(f"Unknown attribute {attr}")
 
-        requested = [f"<Attribute name = \"{x}\" />" for x in requested]
-        requested = '\n'.join(requested)
+        requested = [f'<Attribute name = "{x}" />' for x in requested]
+        requested = "\n".join(requested)
         query = f"""
             <?xml version="1.0" encoding="UTF-8"?>
             <!DOCTYPE Query>

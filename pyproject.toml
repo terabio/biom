@@ -4,24 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "biom"
-version = "0.0.13"
+version = "0.0.14"
 authors = [
     { name = "Aleksandr Fedorov", email = "aleksandr.fedorov@imm.ox.ac.uk" },
 ]
 description = "Modules for biological data analysis"
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 [project.optional-dependencies]
-ensembl = [
-    "pandas >= 2.0.0, < 3",
-]
-sam = [
+repmasker = []
+io = [
     "pysam >= 0.21.0, < 1",
 ]
 gindex = [
@@ -29,20 +27,19 @@ gindex = [
     "pybedtools >= 0.9.1, < 1",
     "sortedcontainers >= 2.4.0, < 3",
 ]
-ripper = [
-    "pysam >= 0.21.0, < 1",
-    "scipy >= 1.10.1, < 2",
-    "pyBigWig >= 0.3.22, < 0.4",
-    "numba >= 0.57.0, < 0.60",
-    "MACS3 >= 3.0.0b1, < 4",
+ensembl = [
     "pandas >= 2.0.0, < 3",
-    "joblib >= 1.3.0, < 2",
+]
+annotation = [
+    "biom[io]",
+    "biom[gindex]",
 ]
 all = [
-    "biom[ensembl]",
+    "biom[repmasker]",
+    "biom[io]",
     "biom[gindex]",
-    "biom[ripper]",
-    "biom[sam]",
+    "biom[ensembl]",
+    "biom[annotation]",
 ]
 
 

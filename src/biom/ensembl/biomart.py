@@ -8,21 +8,23 @@ def fetch(query: str, url: str, saveto: Path, force: bool, verbose: bool):
         return
 
     if not saveto.name.endswith(".gz"):
-        raise ValueError(f"Biomart cache must be stored in gzip-ed TSV files: expected {saveto} to end with .gz.")
+        raise ValueError(
+            f"Biomart cache must be stored in gzip-ed TSV files: expected {saveto} to end with .gz."
+        )
 
     saveto.unlink(missing_ok=True)
     saveto.parent.mkdir(parents=True, exist_ok=True)
 
-    query = [x.strip() for x in query.split('\n')]
-    query = ''.join(query)
+    query = [x.strip() for x in query.split("\n")]
+    query = "".join(query)
 
-    url = f'{url}/biomart/martservice?query={query}'
-    ungzipped = saveto.with_suffix('')
+    url = f"{url}/biomart/martservice?query={query}"
+    ungzipped = saveto.with_suffix("")
 
     try:
         stdout = sys.stdout if verbose else sys.stderr
-        check_call(['wget', '-O', ungzipped, url], stdout=stdout)
-        check_call(['gzip', ungzipped])
+        check_call(["wget", "-O", ungzipped, url], stdout=stdout)
+        check_call(["gzip", ungzipped])
     except Exception as e:
         if ungzipped.exists():
             ungzipped.unlink()

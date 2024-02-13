@@ -23,7 +23,12 @@ class Record:
 
     @property
     def coordinates(self) -> str | None:
-        if self.contig is None or self.start is None or self.end is None or self.strand is None:
+        if (
+            self.contig is None
+            or self.start is None
+            or self.end is None
+            or self.strand is None
+        ):
             return None
         return f"{self.contig}:{self.start}-{self.end}({self.strand})"
 
@@ -35,20 +40,33 @@ class Descriptor(EnsemblDescriptor):
         self._records: dict[str, Record] = {}
 
         if attributes and Attribute.ID not in attributes:
-            raise ValueError(f"Attribute {Attribute.ID} must be included when querying transcript attributes")
+            raise ValueError(
+                f"Attribute {Attribute.ID} must be included when querying transcript attributes"
+            )
 
         dtypes = {x.colname: x.dtype for x in attributes}
-        df = pd.read_csv(self.cache, sep="\t", dtype=dtypes, usecols=list(dtypes.keys()))
+        df = pd.read_csv(
+            self.cache, sep="\t", dtype=dtypes, usecols=list(dtypes.keys())
+        )
 
         if Attribute.Strand in attributes:
-            assert set(df[Attribute.Strand.colname].unique()) == {1, -1}, df[Attribute.Strand.colname].unique()
-            df[Attribute.Strand.colname] = df[Attribute.Strand.colname].apply(lambda x: "+" if x > 0 else "-")
+            assert set(df[Attribute.Strand.colname].unique()) == {1, -1}, df[
+                Attribute.Strand.colname
+            ].unique()
+            df[Attribute.Strand.colname] = df[Attribute.Strand.colname].apply(
+                lambda x: "+" if x > 0 else "-"
+            )
 
         # Create records
         records = [Record(id=id) for id in df[Attribute.ID.colname]]
         mapping = {
-            Attribute.Name: "name", Attribute.Biotype: "biotype", Attribute.Source: "source",
-            Attribute.Contig: "contig", Attribute.Start: "start", Attribute.End: "end", Attribute.Strand: "strand"
+            Attribute.Name: "name",
+            Attribute.Biotype: "biotype",
+            Attribute.Source: "source",
+            Attribute.Contig: "contig",
+            Attribute.Start: "start",
+            Attribute.End: "end",
+            Attribute.Strand: "strand",
         }
         for attr in attributes - {Attribute.ID}:
             for r, val in zip(records, df[attr.colname]):

@@ -3,8 +3,12 @@ from . import gene, transcript
 
 class Assembly:
     def __init__(
-            self, name: str, organism: str, version: int,
-            transcripts: transcript.Descriptor | None = None, genes: gene.Descriptor | None = None
+        self,
+        name: str,
+        organism: str,
+        version: int,
+        transcripts: transcript.Descriptor | None = None,
+        genes: gene.Descriptor | None = None,
     ):
         self._name = name
         self._organism = organism
