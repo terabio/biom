@@ -12,9 +12,9 @@ ENSEMBL_RELEASES = {
     108: "http://oct2022.archive.ensembl.org",
     109: "http://feb2023.archive.ensembl.org",
     110: "http://jul2023.archive.ensembl.org",
-    # 111: "http://jan2024.archive.ensembl.org",
+    111: "http://jan2024.archive.ensembl.org",
 }
-LATEST = 110
+LATEST = 111
 
 
 class Loader:

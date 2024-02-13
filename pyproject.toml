@@ -7,7 +7,7 @@ exclude = ["test_*.py"]
 
 [project]
 name = "biom"
-version = "0.0.14"
+version = "0.0.15"
 authors = [
     { name = "Aleksandr Fedorov", email = "aleksandr.fedorov@imm.ox.ac.uk" },
 ]
