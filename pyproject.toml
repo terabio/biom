@@ -20,29 +20,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-[project.optional-dependencies]
-repmasker = []
-io = [
+dependencies = [
     "pysam >= 0.21.0, < 1",
-]
-gindex = [
     "intervaltree >= 3.1.0, < 4",
     "pybedtools >= 0.9.1, < 1",
     "sortedcontainers >= 2.4.0, < 3",
-]
-ensembl = [
-    "pandas >= 2.0.0, < 3",
-]
-annotation = [
-    "biom[io]",
-    "biom[gindex]",
-]
-all = [
-    "biom[repmasker]",
-    "biom[io]",
-    "biom[gindex]",
-    "biom[ensembl]",
-    "biom[annotation]",
+    "pandas >= 2.0.0, < 3"
 ]
 
 [project.urls]
@@ -51,3 +34,4 @@ all = [
 
 [tool.mypy]
 exclude = ['biom/gindex', 'biom/annotation']
+follow_imports = "silent"
