@@ -1,4 +1,4 @@
-from . import resolution, source
+from . import resolve, source
 from .annotator import Annotator
 
-__all__ = ["Annotator", "resolution", "source"]
+__all__ = ["Annotator", "resolve", "source"]

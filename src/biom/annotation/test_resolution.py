@@ -1,6 +1,6 @@
 import pytest
 
-from biom.annotation.resolution import ResolutionChain, ResolutionLambda, Proportional, Binary, Priority
+from biom.annotation.resolve import ResolutionChain, ResolutionLambda, Proportional, Binary, Priority
 from biom.common import Range
 from biom.gindex import Overlap
 
