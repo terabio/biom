@@ -3,7 +3,9 @@ from typing import Callable, Any
 
 from biom.gindex import Overlap
 
-__all__ = ["Resolution", "Proportional", "Binary", "Priority", "AnnotationWeights"]
+__all__ = ["Resolution", "Proportional", "Binary", "Priority", "Normalize", "AnnotationWeights"]
+
+type AnnotationWeights[T] = dict[T, float]
 
 
 class Resolution[I, O](ABC):
@@ -14,19 +16,19 @@ class Resolution[I, O](ABC):
     def __call__(self, data: I) -> O:
         pass
 
-    def chain[T](self, other: 'Resolution[O, T]') -> 'Resolution[I, T]':
-        return ResolutionChain(self, other)
-
     def apply[T](self, nxt: Callable[[O], T] | 'Resolution[O, T]') -> 'Resolution[I, T]':
         if isinstance(nxt, Resolution):
-            return ResolutionChain(self, nxt)
+            return _Chain(self, nxt)
         elif isinstance(nxt, Callable):
-            return ResolutionChain(self, ResolutionLambda(nxt))
+            return _Chain(self, _Lambda(nxt))
         else:
             raise TypeError(f"Cannot apply {nxt} to {self}")
 
+    def __or__[T](self, nxt: Callable[[O], T] | 'Resolution[O, T]') -> 'Resolution[I, T]':
+        return self.apply(nxt)
 
-class ResolutionChain[I, O, T](Resolution[I, T]):
+
+class _Chain[I, O, T](Resolution[I, T]):
     def __init__(self, first: Resolution[I, O], second: Resolution[O, T]):
         self.first = first
         self.second = second
@@ -35,15 +37,12 @@ class ResolutionChain[I, O, T](Resolution[I, T]):
         return self.second(self.first(data))
 
 
-class ResolutionLambda[I, O](Resolution[I, O]):
+class _Lambda[I, O](Resolution[I, O]):
     def __init__(self, fn: Callable[[I], O]):
         self.fn = fn
 
     def __call__(self, data: I) -> O:
         return self.fn(data)
-
-
-type AnnotationWeights[T] = dict[T, float]
 
 
 class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
@@ -52,8 +51,8 @@ class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
 
     def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
         """
-        The proportional strategy assigns weights to annotation categories based on the proportion of the target ROI
-        that overlaps with each category.
+        The proportional strategy assigns weights to annotation categories based on the overlap of the target ROI
+        with each category
         """
         if len(overlaps) == 0:
             return {self.empty: 1}
@@ -72,14 +71,12 @@ class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
                         weights[anno] = weights.get(anno, 0) + length
 
         assert covered == total, f"Covered length {covered} does not match total length {total}"
-        weights = {anno: weight / covered for anno, weight in weights.items()}
         return weights
 
 
 class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
-    def __init__(self, empty: Any = None, normalize: bool = False):
+    def __init__(self, empty: Any = None):
         self.empty = empty
-        self.normalize = normalize
 
     def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
         """
@@ -101,31 +98,50 @@ class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
         if covered != length:
             categories.add(self.empty)
 
-        weight = 1 / len(categories) if self.normalize else 1
-        weights = {cat: weight for cat in categories}
+        weights = {cat: 1 for cat in categories}
         return weights
 
 
-class Priority[A](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
-    def __init__(self, priority: list[A], use_original_weights: bool = False):
+class Priority[A, D](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
+    def __init__(self, priority: list[D], key: Callable[[D], A] = lambda x: x):
         self.priority = priority
-        self.use_original_weights = use_original_weights
+        self.key = key
 
-    def __call__(self, weights: AnnotationWeights) -> AnnotationWeights:
+    def __call__(self, weights: AnnotationWeights[A]) -> AnnotationWeights[A]:
         """
-        The priority strategy picks the first category in the priority list that is also present in the weights. Then
-        it assigns a weight of 1.0 to this category and discards all other categories. If use_original_weights is True,
-        the original weights will be used for the category instead of 1.0.
+        The priority strategy picks the first category in the priority list that is also present in the weights.
+        If more than one category is mapped to the same priority, all such categories are returned.
         """
-        category = None
+        keys = {}
+        for cat in weights:
+            keys.setdefault(self.key(cat), []).append(cat)
+
+        categories = None
         for cat in self.priority:
-            if cat in weights:
-                category = cat
+            if cat in keys:
+                categories = keys[cat]
                 break
-        if category is None:
+
+        if categories is None:
             raise ValueError(f"None of the priority categories {self.priority} are present in the weights {weights}")
 
-        if self.use_original_weights:
-            return {category: weights[category]}
-        else:
-            return {category: 1.0}
+        return {cat: weights[cat] for cat in categories}
+
+
+class Normalize[A](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
+    def __init__(self, total: float = 1.0):
+        self.total = total
+
+    def __call__(self, weights: AnnotationWeights[A]) -> AnnotationWeights[A]:
+        """
+        Normalize annotation weights to sum to a given total
+        """
+        if len(weights) == 0:
+            return weights
+
+        total = sum(weights.values())
+        if total == 0:
+            raise ValueError(f"Total weight is 0, cannot normalize {weights} to {self.total}")
+
+        factor = self.total / total
+        return {k: v * factor for k, v in weights.items()}

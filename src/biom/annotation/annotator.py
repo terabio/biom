@@ -4,23 +4,17 @@ from biom.gindex import Index, overlap
 
 
 class Annotator[A]:
-    index: Index[A]
-    source: Source
-    resolver: Resolution[list[overlap.Overlap[A]], AnnotationWeights[A]]
-    results: AnnotationWeights[A]
-    processed: int
-
     def __init__(
             self,
             index: Index[A],
             source: Source,
             resolution: Resolution[list[overlap.Overlap[A]], AnnotationWeights[A]]
     ):
-        self.index = index
-        self.source = source
-        self.resolution = resolution
-        self.processed = 0
-        self.results = {}
+        self.index: Index[A] = index
+        self.source: Source = source
+        self.resolution: Resolution[list[overlap.Overlap[A]], AnnotationWeights[A]] = resolution
+        self.processed: int = 0
+        self.results: AnnotationWeights[A] = {}
 
     def annotate(self, contig: str, start: int, end: int) -> AnnotationWeights[A]:
         for strand, blocks in self.source.fetch(contig, start, end):
