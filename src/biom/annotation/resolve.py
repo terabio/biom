@@ -3,6 +3,8 @@ from typing import Callable, Any
 
 from biom.gindex import Overlap
 
+__all__ = ["Resolution", "Proportional", "Binary", "Priority", "AnnotationWeights"]
+
 
 class Resolution[I, O](ABC):
     # Resolution is required to turn a list of overlapping annotations into weights for one or more annotation categories.
