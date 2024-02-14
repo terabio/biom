@@ -35,5 +35,5 @@ class _PEBundledBAM(Source):
             strand = self.strander(lmate)
             assert strand == self.strander(rmate)
 
-            blocks = {Range(start, end) for start, end in chain(lmate.get_blocks(), rmate.get_blocks())}
+            blocks = [Range(start, end) for start, end in set(chain(lmate.get_blocks(), rmate.get_blocks()))]
             yield strand, list(blocks)
