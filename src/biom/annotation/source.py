@@ -22,7 +22,7 @@ def wrap(strander: StrandDeductor, bampe: bam.PEReadsBundler | None = None) -> S
 
 
 class _PEBundledBAM(Source):
-    def __int__(self, strander: StrandDeductor, obj: bam.PEReadsBundler):
+    def __init__(self, strander: StrandDeductor, obj: bam.PEReadsBundler):
         self.strander = strander
         self.obj = obj
 
