@@ -1,5 +1,4 @@
+import importlib.metadata
 from pathlib import Path
 
-from . import __version__
-
-CACHE = Path.home() / ".cache" / "biom" / __version__
+CACHE = Path.home() / ".cache" / "biom" / importlib.metadata.version('biom')
