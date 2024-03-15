@@ -21,4 +21,5 @@ class Annotator[A]:
             overlaps = [self.index.overlap(contig, strand, rng=rng) for rng in blocks]
             for k, v in self.resolution(overlaps).items():
                 self.results[k] = self.results.get(k, 0) + v
+        self.processed += 1
         return self.results
