@@ -1,5 +1,5 @@
 from . import strdeductor
 from .range import Range
-from .strand import Strand, StrandLike
+from .strand import Strand, StrandLike, Stranded
 
-__all__ = ["Range", "Strand", "StrandLike", "strdeductor"]
+__all__ = ["Range", "Strand", "StrandLike", "Stranded", "strdeductor"]

@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Literal
+from typing import Literal, TypeVar, Generic
+
+from attrs import define, field
 
 
 class Strand(Enum):
@@ -29,3 +31,20 @@ class Strand(Enum):
 
 
 StrandLike = Strand | Literal["+", "-", ".", 1, -1, 0]
+
+T = TypeVar("T")
+
+
+@define(slots=True, frozen=True, eq=True, repr=True, hash=True)
+class Stranded(Generic[T]):
+    fwd: T = field()
+    rev: T = field()
+
+    def with_rev(self, value: T) -> 'Stranded[T]':
+        return Stranded(self.fwd, value)
+
+    def with_fwd(self, value: T) -> 'Stranded[T]':
+        return Stranded(value, self.rev)
+
+    def __iter__(self):
+        yield from (self.fwd, self.rev)

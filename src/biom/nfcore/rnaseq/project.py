@@ -1,0 +1,39 @@
+import os
+from pathlib import Path
+from typing import Callable
+
+from attrs import define, field
+
+from biom import bioproj
+from . import descriptor
+from .experiment import Experiment
+
+
+@define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True, init=False)
+class Project:
+    source: bioproj.Project = field()
+    experiments: tuple[Experiment, ...] = field(converter=lambda x: tuple(x))
+
+    def __init__(
+            self, source: bioproj.Project, resfolder: os.PathLike[str], *,
+            bioexp2descriptor: Callable[[bioproj.Experiment], str] = descriptor.from_bioexp
+    ):
+        resfolder = Path(resfolder)
+        if not resfolder.is_dir():
+            raise ValueError(f"Results folder {resfolder} does not exist")
+
+        experiments = []
+        for exp in source.experiments:
+            descriptor = bioexp2descriptor(exp)
+            experiments.append(Experiment(descriptor, exp, resfolder))
+
+        self.__attrs_init__(source, experiments)
+
+    @experiments.validator
+    def check_experiments(self, _, value):
+        if not value:
+            raise ValueError("Project must contain at least one experiment")
+
+    @property
+    def ind(self) -> str:
+        return self.source.ind
