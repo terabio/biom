@@ -9,11 +9,19 @@ class Strand(Enum):
     rev = "-"
     unknown = "."
 
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Strand):
+            return self.value == other.value
+        elif isinstance(other, str):
+            return self.value == other
+        else:
+            return False
+
+    def __hash__(self) -> int:
+        return hash(self.value)
+
     def __str__(self):
         return self.value
-
-    def __repr__(self):
-        return str(self)
 
     @classmethod
     def normalize(cls, strand: 'str | int | Strand') -> 'Strand':

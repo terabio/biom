@@ -16,6 +16,9 @@ class SeqLayout(Enum):
         else:
             return False
 
+    def __hash__(self) -> int:
+        return hash(self.value)
+
     def __repr__(self) -> str:
         return f"SeqLayout({self.value})"
 

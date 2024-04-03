@@ -17,6 +17,9 @@ class Stranding(Enum):
         else:
             return False
 
+    def __hash__(self) -> int:
+        return hash(self.value)
+
 
 @define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True)
 class Library:
