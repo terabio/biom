@@ -16,6 +16,13 @@ def from_bioexp(experiment: bioproj.Experiment) -> str:
         experiment.sample.source, experiment.sample.genotype, experiment.sample.treatment, experiment.sample.tags
     ]:
         tags.extend(tag)
+
+    # If no tags are present, use the sample description as a descriptor
+    if len(tags) == 0:
+        if experiment.sample.description is None:
+            raise ValueError("No tags or description available for the sample.")
+        tags.append(experiment.sample.description)
+
     alltags = "_".join(tags)
 
     descriptor = f"{experiment.ind}${alltags}"

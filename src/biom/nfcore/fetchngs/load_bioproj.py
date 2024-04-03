@@ -112,11 +112,17 @@ def load_bioproj(
             )
 
         # Add sample to project
+        tags: tuple[str, ...]
+        if row['sample_title'] == row['sample_description']:
+            tags, description = tuple(), row['sample_title']
+        else:
+            tags, description = (row['sample_title'],), row['sample_description'] if row['sample_description'] else None
+
         sample = bioproj.Sample(
             ind=row['sample_accession'],
             organism=(row['scientific_name'],),
-            tags=(row['sample_title'],),
-            description=row['sample_description'] if row['sample_description'] else None
+            tags=tags,
+            description=description
         )
         project["samples"].append(sample)
 
