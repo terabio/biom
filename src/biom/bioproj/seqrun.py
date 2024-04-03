@@ -63,10 +63,6 @@ class SeqRun:
     def check_files(self, _, value):
         if not value:
             raise ValueError("Sequencing files must be specified")
-        # for f in value:
-        #     if not f.exists():
-        #         print(f"Sequencing file {f} doesn't exist")
-        #         raise FileNotFoundError(f"Sequencing file {f} doesn't exist")
 
     @layout.validator
     def check_layout(self, _, value):

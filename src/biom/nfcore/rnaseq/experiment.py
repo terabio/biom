@@ -1,4 +1,5 @@
 import os
+from itertools import chain
 from pathlib import Path
 from typing import Iterable
 
@@ -25,27 +26,20 @@ class Experiment:
 
         # BAM file
         bam = resfolder / "star_salmon" / f"{descriptor}.markdup.sorted.bam"
-        if not bam.exists():
-            raise ValueError(f"BAM file {bam} does not exist")
-        bai = bam.with_suffix(".bam.bai")
-        if not bai.exists():
-            raise ValueError(f"BAM index file {bai} does not exist")
 
         # Bigwig
-        fwd = resfolder / "star_salmon" / f"{descriptor}.forward.bigWig"
-        if not fwd.exists():
-            raise ValueError(f"Forward bigWig file {fwd} does not exist")
+        if source.library.stranding in {bioproj.Stranding.Unstranded, bioproj.Stranding.Unknown}:
+            raise ValueError(
+                f"Unstranded experiments or experiments with unknown strandedness are not supported: {descriptor}"
+            )
 
+        fwd = resfolder / "star_salmon" / f"{descriptor}.forward.bigWig"
         rev = resfolder / "star_salmon" / f"{descriptor}.reverse.bigWig"
-        if not rev.exists():
-            raise ValueError(f"Reverse bigWig file {rev} does not exist")
 
         bigwig = Stranded(fwd, rev)
 
         # Salmon file
         salmon = resfolder / "star_salmon" / descriptor / "quant.sf"
-        if not salmon.exists():
-            raise ValueError(f"Salmon file {salmon} does not exist")
 
         self.__attrs_init__(descriptor, source, bam, bigwig, salmon)
 
@@ -64,3 +58,16 @@ class Experiment:
     @property
     def runs(self) -> Iterable[bioproj.SeqRun]:
         return self.source.runs
+
+    @property
+    def ensure_exists(self):
+        allfiles = chain(
+            [self.bam, self.bam.with_suffix(".bam.bai"), self.bigwig.fwd, self.bigwig.rev, self.salmon],
+            *[r.files for r in self.runs]
+        )
+        missing = [f for f in allfiles if not f.exists()]
+        if missing:
+            report = "\n".join(f"\t{f}" for f in missing)
+            raise FileNotFoundError(
+                f"nf-core/rnaseq project ({self.source.ind}) is not complete, missing files: {report}"
+            )
