@@ -3,7 +3,7 @@ from biom import bioproj
 __all__ = ["from_bioexp", "to_expind"]
 
 
-def from_bioexp(experiment: bioproj.Experiment) -> str:
+def from_bioexp(experiment: bioproj.Experiment, separator: str = "+") -> str:
     """
     Converts a bioproj experiment into a human-readable descriptor that can be used for
     nf-core/rnaseq pipeline design files.
@@ -23,20 +23,21 @@ def from_bioexp(experiment: bioproj.Experiment) -> str:
             raise ValueError("No tags or description available for the sample.")
         tags.append(experiment.sample.description)
 
+    if experiment.sample.replicate is not None:
+        tags.append(str(experiment.sample.replicate))
+
     alltags = "_".join(tags)
 
-    descriptor = f"{experiment.ind}${alltags}"
-    if experiment.sample.replicate is not None:
-        descriptor += f"${experiment.sample.replicate}"
+    descriptor = f"{experiment.ind}{separator}{alltags}"
 
     return descriptor
 
 
-def to_expind(descriptor: str) -> str:
+def to_expind(descriptor: str, separator: str = "+") -> str:
     """
     Extracts the experiment index from a descriptor string.
 
     :param descriptor: The descriptor string.
     :return: The experiment index.
     """
-    return descriptor.split("$")[0]
+    return descriptor.split(separator)[0]
