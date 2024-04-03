@@ -143,7 +143,7 @@ def load_bioproj(
         base_count = int(row['base_count']) if 'base_count' in row else None
         seqrun = bioproj.SeqRun(
             ind=row['run_accession'],
-            machine=f"{row['instrument_model']}: {row['instrument_platform']}",
+            machine=f"{row['instrument_platform']}: {row['instrument_model']}",
             layout=layout,
             files=files,
             reads=read_count,
