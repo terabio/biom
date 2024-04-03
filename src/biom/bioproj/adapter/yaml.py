@@ -24,7 +24,7 @@ def _unstructure_hook(exp: Experiment) -> dict:
 def _structure_hook(data: dict, ttype: type) -> Project:
     assert ttype is Project
 
-    samples = _YAML_CONVERTER.structure(data["samples"], tuple[Sample])
+    samples = _YAML_CONVERTER.structure(data["samples"], tuple[Sample, ...])
     if len(samples) != len(set(s.ind for s in samples)):
         raise ValueError("Sample IDs must be unique")
 
@@ -33,7 +33,7 @@ def _structure_hook(data: dict, ttype: type) -> Project:
         data["ind"],
         samples_mapping[data["sample"]],
         _YAML_CONVERTER.structure(data["library"], Library),
-        _YAML_CONVERTER.structure(data["runs"], tuple[SeqRun])
+        _YAML_CONVERTER.structure(data["runs"], tuple[SeqRun, ...])
     ) for data in data["experiments"])
 
     return Project(data["ind"], tuple(experiments), samples)
