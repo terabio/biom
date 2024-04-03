@@ -35,5 +35,5 @@ dependencies = [
 "Bug Tracker" = "https://github.com/alnfedorov/biom/issues"
 
 [tool.mypy]
-exclude = ['biom/gindex', 'biom/annotation']
+exclude = ['biom/ds/gindex', 'biom/analysis/annotation']
 follow_imports = "silent"
