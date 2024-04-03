@@ -21,8 +21,8 @@ class Experiment:
     def __init__(self, descriptor: str, source: bioproj.Experiment, resfolder: os.PathLike[str]):
         # Folder with the results of the pipeline
         resfolder = Path(resfolder)
-        if not resfolder.is_dir():
-            raise ValueError(f"Results folder {resfolder} does not exist")
+        # if not resfolder.is_dir():
+        #     raise ValueError(f"Results folder {resfolder} does not exist")
 
         # BAM file
         bam = resfolder / "star_salmon" / f"{descriptor}.markdup.sorted.bam"
