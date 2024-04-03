@@ -14,7 +14,7 @@ from ..seqrun import SeqLayout, SeqRun
 # - Make the tests scalable for further adapters
 
 
-def _ensure_correctness(project: Project, serializer: callable, deserializer: callable):
+def _ensure_correctness(project: Project, serializer, deserializer):
     serialized = serializer(project)
     deserialized = deserializer(serialized)
     assert project == deserialized
