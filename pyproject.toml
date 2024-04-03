@@ -22,7 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "attrs >= 23.2.0, < 24",
-    "cattrs >= 23.2.3, < 24",
+    "cattrs[pyyaml] >= 23.2.3, < 24",
     "pysam >= 0.21.0, < 1",
     "intervaltree >= 3.1.0, < 4",
     "pybedtools >= 0.9.1, < 1",
