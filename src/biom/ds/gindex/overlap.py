@@ -1,16 +1,19 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Generic, TypeVar
 
 from sortedcontainers import SortedList
 
 from biom.primitives import Range
 
+_T = TypeVar("_T")
+
 
 @dataclass(frozen=True, slots=True)
-class OverlapSteps[T]:
+class OverlapSteps(Generic[_T]):
     rng: Range
     boundaries: list[Range]
-    annotations: list[set[T]]
+    annotations: list[set[_T]]
 
     def __post_init__(self):
         if len(self.boundaries) != len(self.annotations):
@@ -23,35 +26,35 @@ class OverlapSteps[T]:
     def __len__(self) -> int:
         return len(self.annotations)
 
-    def __iter__(self) -> Iterable[tuple[Range, set[T]]]:
+    def __iter__(self) -> Iterable[tuple[Range, set[_T]]]:
         return zip(self.boundaries, self.annotations)
 
 
 @dataclass(frozen=True, slots=True)
-class Overlap[T]:
+class Overlap(Generic[_T]):
     rng: Range
     intervals: list[Range]
-    annotations: list[T]
+    annotations: list[_T]
 
-    def to_steps(self) -> OverlapSteps[T]:
-        boundaries = {self.rng.start, self.rng.end}
+    def to_steps(self) -> OverlapSteps[_T]:
+        template = {self.rng.start, self.rng.end}
         for it in self.intervals:
-            boundaries.add(it.start)
-            boundaries.add(it.end)
+            template.add(it.start)
+            template.add(it.end)
 
-        boundaries = SortedList(boundaries)
+        boundaries = SortedList(template)
 
-        annotation = [set() for _ in range(len(boundaries) - 1)]
+        annotation: list[set[_T]] = [set() for _ in range(len(boundaries) - 1)]
 
         for it, anno in zip(self.intervals, self.annotations):
             st, en = boundaries.bisect_left(it.start), boundaries.bisect_left(it.end)
             for stanno in annotation[st:en]:
                 stanno.add(anno)
-        boundaries = [Range(boundaries[i], boundaries[i + 1]) for i in range(len(boundaries) - 1)]
+        steps = [Range(boundaries[i], boundaries[i + 1]) for i in range(len(boundaries) - 1)]
 
-        return OverlapSteps(self.rng, boundaries, annotation)
+        return OverlapSteps(self.rng, steps, annotation)
 
-    def __iter__(self) -> Iterable[tuple[Range, T]]:
+    def __iter__(self) -> Iterable[tuple[Range, _T]]:
         return zip(self.intervals, self.annotations)
 
     def __len__(self) -> int:

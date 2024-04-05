@@ -1,8 +1,8 @@
 import pytest
 
-from biom.analysis.annotation.resolve import _Chain, _Lambda, Proportional, Binary, Priority, Normalize
 from biom.ds.gindex import Overlap
 from biom.primitives import Range
+from .resolve import _Chain, _Lambda, Proportional, Binary, Priority, Normalize
 
 
 # Test ResolutionChain

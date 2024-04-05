@@ -2,7 +2,7 @@ import gzip
 import tempfile
 from pathlib import Path
 
-from biom.annot.repmasker import RepmaskerClassification
+from biom.db.repmasker import RepmaskerClassification
 
 
 def test_repmasker_classification():

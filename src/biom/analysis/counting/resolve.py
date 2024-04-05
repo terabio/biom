@@ -1,55 +1,62 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Any
+from collections import defaultdict
+from collections.abc import Callable
+from typing import TypeVar, Generic, cast
 
 from biom.ds.gindex import Overlap
 
 __all__ = ["Resolution", "Proportional", "Binary", "Priority", "Normalize", "AnnotationWeights"]
 
-type AnnotationWeights[T] = dict[T, float]
+_T = TypeVar("_T")
+_I = TypeVar("_I")
+_O = TypeVar("_O")
+_D = TypeVar("_D")
+
+AnnotationWeights = dict[_T, float]
 
 
-class Resolution[I, O](ABC):
+class Resolution(Generic[_I, _O], ABC):
     # Resolution is required to turn a list of overlapping annotations into weights for one or more annotation categories.
     # This is necessary when a sequenced read/read pair isn't entirely within a known annotation 'type'.
     # All resolution strategies are chainable, so that multiple strategies can be applied in sequence.
     @abstractmethod
-    def __call__(self, data: I) -> O:
+    def __call__(self, data: _I) -> _O:
         pass
 
-    def apply[T](self, nxt: Callable[[O], T] | 'Resolution[O, T]') -> 'Resolution[I, T]':
+    def apply(self, nxt: 'Callable[[_O], _T] | Resolution[_O, _T]') -> 'Resolution[_I, _T]':
         if isinstance(nxt, Resolution):
             return _Chain(self, nxt)
-        elif isinstance(nxt, Callable):
+        elif isinstance(nxt, Callable):  # type: ignore # https://github.com/python/mypy/issues/6680
             return _Chain(self, _Lambda(nxt))
         else:
             raise TypeError(f"Cannot apply {nxt} to {self}")
 
-    def __or__[T](self, nxt: Callable[[O], T] | 'Resolution[O, T]') -> 'Resolution[I, T]':
+    def __or__(self, nxt: 'Callable[[_O], _T] | Resolution[_O, _T]') -> 'Resolution[_I, _T]':
         return self.apply(nxt)
 
 
-class _Chain[I, O, T](Resolution[I, T]):
-    def __init__(self, first: Resolution[I, O], second: Resolution[O, T]):
+class _Chain(Generic[_I, _O, _T], Resolution[_I, _T]):
+    def __init__(self, first: Resolution[_I, _O], second: Resolution[_O, _T]):
         self.first = first
         self.second = second
 
-    def __call__(self, data: I) -> T:
+    def __call__(self, data: _I) -> _T:
         return self.second(self.first(data))
 
 
-class _Lambda[I, O](Resolution[I, O]):
-    def __init__(self, fn: Callable[[I], O]):
+class _Lambda(Generic[_I, _O, _T], Resolution[_I, _O]):
+    def __init__(self, fn: Callable[[_I], _O]):
         self.fn = fn
 
-    def __call__(self, data: I) -> O:
+    def __call__(self, data: _I) -> _O:
         return self.fn(data)
 
 
-class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
-    def __init__(self, empty: Any = None):
+class Proportional(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
+    def __init__(self, empty: _T | None = None):
         self.empty = empty
 
-    def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
+    def __call__(self, overlaps: list[Overlap[_T]]) -> AnnotationWeights[_T | None]:
         """
         The proportional strategy assigns weights to annotation categories based on the overlap of the target ROI
         with each category
@@ -57,10 +64,12 @@ class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
         if len(overlaps) == 0:
             return {self.empty: 1}
 
-        weights, covered, total = {}, 0, 0
+        weights: AnnotationWeights[_T | None] = {}
+        covered, total = 0, 0
         for roiov in overlaps:
             total += len(roiov.rng)  # original ROI length
-            for rng, annotations in roiov.to_steps():  # step-wise ROI annotation
+            # step-wise ROI annotation
+            for rng, annotations in roiov.to_steps():  # type: ignore # https://github.com/python/mypy/issues/16733
                 length = len(rng)
                 if not annotations:
                     covered += length
@@ -74,20 +83,20 @@ class Proportional[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
         return weights
 
 
-class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
-    def __init__(self, empty: Any = None):
+class Binary(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
+    def __init__(self, empty: _T | None = None):
         self.empty = empty
 
-    def __call__(self, overlaps: list[Overlap[A]]) -> AnnotationWeights[A]:
+    def __call__(self, overlaps: list[Overlap[_T]]) -> AnnotationWeights[_T | None]:
         """
         The binary strategy assigns weights to annotation categories based on the presence of at least a single base pair
         overlap between the read block and each category
         """
-        categories = set()
+        categories: set[_T | None] = set()
         length, covered = 0, 0
         for blockov in overlaps:
             length += len(blockov.rng)
-            for rng, step in blockov.to_steps():
+            for rng, step in blockov.to_steps():  # type: ignore # https://github.com/python/mypy/issues/16733
                 if step:
                     covered += len(rng)
                     categories |= step
@@ -98,28 +107,28 @@ class Binary[A](Resolution[list[Overlap[A]], AnnotationWeights[A]]):
         if covered != length:
             categories.add(self.empty)
 
-        weights = {cat: 1 for cat in categories}
+        weights = {cat: 1.0 for cat in categories}
         return weights
 
 
-class Priority[A, D](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
-    def __init__(self, priority: list[D], key: Callable[[D], A] = lambda x: x):
+class Priority(Generic[_T, _D], Resolution[AnnotationWeights[_T], AnnotationWeights[_T]]):
+    def __init__(self, priority: list[_D], key: Callable[[_T], _D] | None = None):
         self.priority = priority
-        self.key = key
+        self.key = key or (lambda x: cast(_D, x))
 
-    def __call__(self, weights: AnnotationWeights[A]) -> AnnotationWeights[A]:
+    def __call__(self, weights: AnnotationWeights[_T]) -> AnnotationWeights[_T]:
         """
         The priority strategy picks the first category in the priority list that is also present in the weights.
         If more than one category is mapped to the same priority, all such categories are returned.
         """
-        keys = {}
+        keys: defaultdict[_D, list[_T]] = defaultdict(list)
         for cat in weights:
-            keys.setdefault(self.key(cat), []).append(cat)
+            keys[self.key(cat)].append(cat)
 
-        categories = None
-        for cat in self.priority:
-            if cat in keys:
-                categories = keys[cat]
+        categories: list[_T] | None = None
+        for p in self.priority:
+            if p in keys:
+                categories = keys[p]
                 break
 
         if categories is None:
@@ -128,11 +137,11 @@ class Priority[A, D](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
         return {cat: weights[cat] for cat in categories}
 
 
-class Normalize[A](Resolution[AnnotationWeights[A], AnnotationWeights[A]]):
+class Normalize(Resolution[AnnotationWeights[_T], AnnotationWeights[_T]]):
     def __init__(self, total: float = 1.0):
         self.total = total
 
-    def __call__(self, weights: AnnotationWeights[A]) -> AnnotationWeights[A]:
+    def __call__(self, weights: AnnotationWeights[_T]) -> AnnotationWeights[_T]:
         """
         Normalize annotation weights to sum to a given total
         """

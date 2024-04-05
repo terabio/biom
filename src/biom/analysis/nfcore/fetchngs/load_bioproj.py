@@ -5,7 +5,7 @@ from io import TextIOBase
 from pathlib import Path
 from typing import Any, Callable
 
-from biom.analysis import bioproj
+from biom.primitives import bioproj
 
 RowHook = Callable[[dict[str, Any]], dict[str, Any] | None]
 

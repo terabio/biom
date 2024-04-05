@@ -2,7 +2,10 @@ from typing import Callable, Literal
 
 from pysam import AlignedSegment
 
-StrandDeductor = Callable[[AlignedSegment], Literal["+", "-"]]
+from .strand import Strand
+from . import bioproj
+
+StrandDeductor = Callable[[AlignedSegment], Strand]
 
 
 def get(protocol: Literal["f/s", "s/f", "f", "s"]) -> StrandDeductor:
@@ -19,55 +22,80 @@ def get(protocol: Literal["f/s", "s/f", "f", "s"]) -> StrandDeductor:
             raise ValueError(f"Unknown stranding protocol: {protocol}")
 
 
-def _f(read: AlignedSegment) -> Literal["+", "-"]:
+def from_bioproj(experiment: bioproj.Experiment) -> StrandDeductor:
+    runs = list(experiment.runs)
+    layout = runs[0].layout
+    for r in runs[1:]:
+        if r.layout != layout:
+            raise ValueError(
+                f"All runs must have the same layout. Found different layouts: {layout} and {r.layout} in {experiment}"
+            )
+
+    match (layout, experiment.library.stranding):
+        case (bioproj.SeqLayout.Single, bioproj.Stranding.Forward):
+            return _s
+        case (bioproj.SeqLayout.Single, bioproj.Stranding.Reverse):
+            return _f
+        case (bioproj.SeqLayout.Paired, bioproj.Stranding.Forward):
+            return _fs
+        case (bioproj.SeqLayout.Paired, bioproj.Stranding.Reverse):
+            return _sf
+        case _:
+            raise ValueError(
+                f"Unsupported layout/stranding combination: {layout}/{experiment.library.stranding}\n"
+                f"bioproj.Experiment: {experiment}"
+            )
+
+
+def _f(read: AlignedSegment) -> Strand:
     # Flip the mapped strand
     match read.is_reverse:
         case True:
-            return "+"
+            return Strand.fwd
         case False:
-            return "-"
+            return Strand.rev
         case _:
             assert False, "Unreachable"
 
 
-def _s(read: AlignedSegment) -> Literal["+", "-"]:
+def _s(read: AlignedSegment) -> Strand:
     # Keep the mapped strand
     match read.is_reverse:
         case True:
-            return "-"
+            return Strand.rev
         case False:
-            return "+"
+            return Strand.fwd
         case _:
             assert False, "Unreachable"
 
 
-def _fs(read: AlignedSegment) -> Literal["+", "-"]:
+def _fs(read: AlignedSegment) -> Strand:
     match (read.is_read1, read.is_reverse):
         # First mate -> flip its strand
         case (True, True):
-            return "+"
+            return Strand.fwd
         case (True, False):
-            return "-"
+            return Strand.rev
         # Second mate -> keep its strand
         case (False, True):
-            return "-"
+            return Strand.rev
         case (False, False):
-            return "+"
+            return Strand.fwd
         case _:
             assert False, "Unreachable"
 
 
-def _sf(read: AlignedSegment) -> Literal["+", "-"]:
+def _sf(read: AlignedSegment) -> Strand:
     match (read.is_read1, read.is_reverse):
         # First mate -> keep its strand
         case (True, True):
-            return "-"
+            return Strand.rev
         case (True, False):
-            return "+"
+            return Strand.fwd
         # Second mate -> flip its strand
         case (False, True):
-            return "+"
+            return Strand.fwd
         case (False, False):
-            return "-"
+            return Strand.rev
         case _:
             assert False, "Unreachable"

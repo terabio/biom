@@ -1,4 +1,4 @@
-from .index import Index, from_bed, merge
+from .genomic_index import GenomicIndex, merge
 from .overlap import Overlap, OverlapSteps
 
-__all__ = ["Index", "from_bed", "merge", "Overlap", "OverlapSteps"]
+__all__ = ["GenomicIndex", "merge", "Overlap", "OverlapSteps"]

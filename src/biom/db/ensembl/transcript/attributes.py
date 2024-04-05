@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any, Self
 
-from biom.annot.ensembl.abc import EnsemblAttribute
+from biom.db.ensembl.abc import EnsemblAttribute
 from .. import biomart
 
 

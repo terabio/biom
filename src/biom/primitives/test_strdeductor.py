@@ -1,6 +1,6 @@
 import pytest
 
-from biom.primitives import strdeductor
+from biom.primitives import strdeductor, Strand
 
 
 def test_get():
@@ -13,27 +13,27 @@ def test_get():
 
 
 def test_f():
-    assert strdeductor._f(_AlignedSegmentStub(True)) == "+"
-    assert strdeductor._f(_AlignedSegmentStub(False)) == "-"
+    assert strdeductor._f(_AlignedSegmentStub(True)) == Strand.fwd
+    assert strdeductor._f(_AlignedSegmentStub(False)) == Strand.rev
 
 
 def test_s():
-    assert strdeductor._s(_AlignedSegmentStub(True)) == "-"
-    assert strdeductor._s(_AlignedSegmentStub(False)) == "+"
+    assert strdeductor._s(_AlignedSegmentStub(True)) == Strand.rev
+    assert strdeductor._s(_AlignedSegmentStub(False)) == Strand.fwd
 
 
 def test_fs():
-    assert strdeductor._fs(_AlignedSegmentStub(True, True)) == "+"
-    assert strdeductor._fs(_AlignedSegmentStub(True, False)) == "-"
-    assert strdeductor._fs(_AlignedSegmentStub(False, True)) == "-"
-    assert strdeductor._fs(_AlignedSegmentStub(False, False)) == "+"
+    assert strdeductor._fs(_AlignedSegmentStub(True, True)) == Strand.fwd
+    assert strdeductor._fs(_AlignedSegmentStub(True, False)) == Strand.rev
+    assert strdeductor._fs(_AlignedSegmentStub(False, True)) == Strand.rev
+    assert strdeductor._fs(_AlignedSegmentStub(False, False)) == Strand.fwd
 
 
 def test_sf():
-    assert strdeductor._sf(_AlignedSegmentStub(True, True)) == "-"
-    assert strdeductor._sf(_AlignedSegmentStub(True, False)) == "+"
-    assert strdeductor._sf(_AlignedSegmentStub(False, True)) == "+"
-    assert strdeductor._sf(_AlignedSegmentStub(False, False)) == "-"
+    assert strdeductor._sf(_AlignedSegmentStub(True, True)) == Strand.rev
+    assert strdeductor._sf(_AlignedSegmentStub(True, False)) == Strand.fwd
+    assert strdeductor._sf(_AlignedSegmentStub(False, True)) == Strand.fwd
+    assert strdeductor._sf(_AlignedSegmentStub(False, False)) == Strand.rev
 
 
 class _AlignedSegmentStub:

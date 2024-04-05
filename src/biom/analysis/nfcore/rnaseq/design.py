@@ -2,7 +2,7 @@ import os
 from io import TextIOBase
 from typing import Callable
 
-from biom.analysis import bioproj
+from biom.primitives import bioproj
 from . import descriptor
 
 __all__ = ["from_bioproj"]

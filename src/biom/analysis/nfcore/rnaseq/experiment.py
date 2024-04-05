@@ -5,8 +5,7 @@ from typing import Iterable
 
 from attrs import define, field
 
-from biom.analysis import bioproj
-from biom.primitives import Stranded
+from biom.primitives import Stranded, bioproj
 
 
 @define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True, init=False)

@@ -1,4 +1,4 @@
-from biom.analysis import bioproj
+from biom.primitives import bioproj
 
 __all__ = ["from_bioexp", "to_expind"]
 

@@ -1,29 +1,29 @@
 import pytest
 
-from biom.primitives import Strand
+from biom.primitives import Direction
 
 
 def test_strand_str_repr():
-    assert str(Strand.fwd) == "+"
-    assert repr(Strand.fwd) == "+"
-    assert str(Strand.rev) == "-"
-    assert repr(Strand.rev) == "-"
-    assert str(Strand.unknown) == "."
-    assert repr(Strand.unknown) == "."
+    assert str(Direction.fwd) == "+"
+    assert repr(Direction.fwd) == "+"
+    assert str(Direction.rev) == "-"
+    assert repr(Direction.rev) == "-"
+    assert str(Direction.unknown) == "."
+    assert repr(Direction.unknown) == "."
 
 
 def test_strand_normalize():
-    assert Strand.normalize("+") == Strand.fwd
-    assert Strand.normalize(1) == Strand.fwd
-    assert Strand.normalize(Strand.fwd) == Strand.fwd
-    assert Strand.normalize("-") == Strand.rev
-    assert Strand.normalize(-1) == Strand.rev
-    assert Strand.normalize(Strand.rev) == Strand.rev
-    assert Strand.normalize(".") == Strand.unknown
-    assert Strand.normalize(0) == Strand.unknown
-    assert Strand.normalize(Strand.unknown) == Strand.unknown
+    assert Direction.normalize("+") == Direction.fwd
+    assert Direction.normalize(1) == Direction.fwd
+    assert Direction.normalize(Direction.fwd) == Direction.fwd
+    assert Direction.normalize("-") == Direction.rev
+    assert Direction.normalize(-1) == Direction.rev
+    assert Direction.normalize(Direction.rev) == Direction.rev
+    assert Direction.normalize(".") == Direction.unknown
+    assert Direction.normalize(0) == Direction.unknown
+    assert Direction.normalize(Direction.unknown) == Direction.unknown
 
 
 def test_strand_normalize_invalid():
     with pytest.raises(ValueError):
-        Strand.normalize("invalid")
+        Direction.normalize("invalid")

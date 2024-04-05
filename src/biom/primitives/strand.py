@@ -7,18 +7,6 @@ from attrs import define, field
 class Strand(Enum):
     fwd = "+"
     rev = "-"
-    unknown = "."
-
-    def __eq__(self, other) -> bool:
-        if isinstance(other, Strand):
-            return self.value == other.value
-        elif isinstance(other, str):
-            return self.value == other
-        else:
-            return False
-
-    def __hash__(self) -> int:
-        return hash(self.value)
 
     def __repr__(self):
         return self.value
@@ -33,28 +21,26 @@ class Strand(Enum):
                 return Strand.fwd
             case "-" | -1:
                 return Strand.rev
-            case "." | 0:
-                return Strand.unknown
             case _ if isinstance(strand, cls):
                 return strand
             case _:
                 raise ValueError(f"Unknown strand: {strand}")
 
 
-StrandLike = Strand | Literal["+", "-", ".", 1, -1, 0]
+StrandLike = Strand | Literal["+", "-", 1, -1]
 
-T = TypeVar("T")
+_T = TypeVar("_T")
 
 
 @define(slots=True, frozen=True, eq=True, repr=True, hash=True)
-class Stranded(Generic[T]):
-    fwd: T = field()
-    rev: T = field()
+class Stranded(Generic[_T]):
+    fwd: _T = field()
+    rev: _T = field()
 
-    def with_rev(self, value: T) -> 'Stranded[T]':
+    def with_rev(self, value: _T) -> 'Stranded[_T]':
         return Stranded(self.fwd, value)
 
-    def with_fwd(self, value: T) -> 'Stranded[T]':
+    def with_fwd(self, value: _T) -> 'Stranded[_T]':
         return Stranded(value, self.rev)
 
     def __iter__(self):
