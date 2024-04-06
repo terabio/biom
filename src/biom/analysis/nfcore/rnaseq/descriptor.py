@@ -3,32 +3,30 @@ from biom.primitives import bioproj
 __all__ = ["from_bioexp", "to_expind"]
 
 
-def from_bioexp(experiment: bioproj.Experiment, separator: str = "+") -> str:
+def from_bioexp(experiment: bioproj.Experiment, *, sort_attributes: bool = True, separator: str = "+") -> str:
     """
     Converts a bioproj experiment into a human-readable descriptor that can be used for
     nf-core/rnaseq pipeline design files.
 
     :param experiment: The experiment object to be converted.
+    :param sort_attributes: Whether to sort the attributes alphabetically.
+    :param separator: The separator to use between the experiment index and the attributes.
     :return: The descriptor string.
     """
-    tags: list[str] = []
-    for tag in [
-        experiment.sample.source, experiment.sample.genotype, experiment.sample.treatment, experiment.sample.tags
-    ]:
-        tags.extend(tag)
+    attributes: list[str] = []
+    items = sorted(experiment.sample.attributes.items()) if sort_attributes else experiment.sample.attributes.items()
+    for atrribute, value in items:
+        attributes.append(f"{atrribute}={value}")
 
     # If no tags are present, use the sample description as a descriptor
-    if len(tags) == 0:
+    if len(attributes) == 0:
         if experiment.sample.description is None:
             raise ValueError("No tags or description available for the sample.")
-        tags.append(experiment.sample.description)
+        attributes.append(experiment.sample.description)
 
-    if experiment.sample.replicate is not None:
-        tags.append(str(experiment.sample.replicate))
+    all_attributes = "_".join(attributes)
 
-    alltags = "_".join(tags)
-
-    descriptor = f"{experiment.ind}{separator}{alltags}"
+    descriptor = f"{experiment.ind}{separator}{all_attributes}"
 
     return descriptor
 

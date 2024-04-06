@@ -12,27 +12,15 @@ class Sample:
         Sample ID, must be unique within the project.
     organism : tuple[str, ...]
         Organism(s) from which the sample was derived. E.g. ('Homo sapiens',), ('Mus musculus', 'HSV-1'), etc.
-    source: tuple[str, ...]
-        Cells/tissues used to generate the sample. E.g. ('HeLa',), ('brain', 'neurons'), etc.
-    replicate: str
-        Replicate number or identifier.
-    genotype: tuple[str, ...]
-        Genotype of the sample, optional. E.g. ['WT'], ['MDA5-KO', 'RIGI-KO'], etc.
-    treatment: tuple[str, ...]
-        Treatments applied to the sample, optional. E.g. ['Untreated'], ['DMSO', 'IFNb'], etc.
-    tags: tuple[str, ...]
-        Additional descriptive tags for the sample, optional. E.g. ['Confluence 75%'], etc.
+    attributes: dict[str, str]
+        Additional descriptive attributes for the sample, optional. E.g. {'Confluence': '75%', 'Source': 'HeLa'}, etc.
     description: str
         A description of the sample, if available.
     """
     ind: str = field()
     organism: tuple[str, ...] = field(converter=lambda x: tuple(x))
     # Optional meta information
-    source: tuple[str, ...] = field(converter=lambda x: tuple(x), factory=tuple)
-    genotype: tuple[str, ...] = field(converter=lambda x: tuple(x), factory=tuple)
-    treatment: tuple[str, ...] = field(converter=lambda x: tuple(x), factory=tuple)
-    replicate: str | None = field(default=None)
-    tags: tuple[str, ...] = field(converter=lambda x: tuple(x), factory=tuple)
+    attributes: dict[str, str] = field(factory=dict)
     description: str | None = field(default=None)
 
     @ind.validator
@@ -44,3 +32,9 @@ class Sample:
     def check_organism(self, _, value):
         if not value:
             raise ValueError("Organism must be specified")
+
+    @attributes.validator
+    def check_tags(self, _, value):
+        for k, v in value.items():
+            if not v:
+                raise ValueError(f"Empty attributes are not allowed: {k} -> {v}")

@@ -8,19 +8,21 @@ class SeqLayout(Enum):
     Paired = "paired"
     Single = "single"
 
-    def __eq__(self, other) -> bool:
-        if isinstance(other, SeqLayout):
-            return self.value == other.value
-        elif isinstance(other, str):
-            return self.value == other
-        else:
-            return False
-
-    def __hash__(self) -> int:
-        return hash(self.value)
-
     def __repr__(self) -> str:
         return f"SeqLayout({self.value})"
+
+    def __str__(self) -> str:
+        return self.value
+
+    @classmethod
+    def normalize(cls, value: str) -> 'SeqLayout':
+        match value.lower():
+            case 'paired' | 'pe':
+                return cls.Paired
+            case 'single' | 'se':
+                return cls.Single
+            case _:
+                raise ValueError(f"Unknown sequencing layout: {value}")
 
 
 @define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True)
@@ -36,10 +38,12 @@ class SeqRun:
         Sequencing machine used for the run. E.g. 'Illumina NovaSeq 6000', 'Oxford Nanopore MinION', etc.
     layout : SeqLayout
         Layout of the sequencing run. E.g. SeqLayout.Paired, SeqLayout.Single or just 'paired', 'single'.
-    length : int
-        Average read length of the sequencing run. None if the length is unknown.
     files : tuple[Path, ...]
         Paths to the sequencing files. Should be one (single) or two files (paired) depending on the layout.
+    reads : int
+        Total number of reads in the sequencing run, if available.
+    bases : int
+        Total number of bases in the sequencing run, if available.
     description : str
         Description of the sequencing run, if available.
     """

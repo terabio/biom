@@ -111,17 +111,18 @@ def load_bioproj(
                 f"Expected {project['description']} but got {row['study_title']}"
             )
 
-        # Add sample to project
-        tags: tuple[str, ...]
-        if row['sample_title'] == row['sample_description']:
-            tags, description = tuple(), row['sample_title']
+        # Parse attributes
+        attributes = {"title": row['sample_title']}
+
+        if row['sample_description'] != attributes['title']:
+            description = row['sample_description']
         else:
-            tags, description = (row['sample_title'],), row['sample_description'] if row['sample_description'] else None
+            description = None
 
         sample = bioproj.Sample(
             ind=row['sample_accession'],
             organism=(row['scientific_name'],),
-            tags=tags,
+            attributes=attributes,
             description=description
         )
         project["samples"].append(sample)

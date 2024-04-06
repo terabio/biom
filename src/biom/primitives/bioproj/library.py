@@ -9,16 +9,25 @@ class Stranding(Enum):
     Reverse = "reverse"
     Unknown = "unknown"
 
-    def __eq__(self, other):
-        if isinstance(other, Stranding):
-            return self.value == other.value
-        elif isinstance(other, str):
-            return self.value == other
-        else:
-            return False
+    def __repr__(self) -> str:
+        return f"Stranding({self.value})"
 
-    def __hash__(self) -> int:
-        return hash(self.value)
+    def __str__(self) -> str:
+        return self.value
+    
+    @classmethod
+    def normalize(cls, value: str) -> 'Stranding':
+        match value.lower():
+            case 'unstranded' | 'u':
+                return cls.Unstranded
+            case 'forward' | 'f':
+                return cls.Forward
+            case 'reverse' | 'r':
+                return cls.Reverse
+            case 'unknown' | 'x':
+                return cls.Unknown
+            case _:
+                raise ValueError(f"Unknown stranding: {value}")
 
 
 @define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True)

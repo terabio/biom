@@ -22,7 +22,7 @@ def _ensure_correctness(project: Project, serializer, deserializer):
 
 def test_yaml_adapter():
     run = SeqRun("my-run", "illumina", SeqLayout.Paired, (Path("file1.fastq"), Path("file2.fastq")), 1000000, 200000000)
-    sample = Sample("smpl-ind", ("homo sapiens",), ("brain", "neurons"))
+    sample = Sample("smpl-ind", ("homo sapiens",), {"tissue": "brain", "cells": "neurons"}, "My best sample ever")
     lib = Library(("transcriptome",), ("poly-A",), Stranding.Forward)
     exp = Experiment("exp-1", sample, lib, (run,))
     project = Project("super-project-ind", (exp,), (sample,))
@@ -32,7 +32,7 @@ def test_yaml_adapter():
 
 def test_yaml_adapter_single_layout():
     run = SeqRun("my-run", "illumina", SeqLayout.Single, (Path("file1.fastq"),), 1000000, 200000000)
-    sample = Sample("smpl-ind", ("homo sapiens",), ("brain", "neurons"))
+    sample = Sample("smpl-ind", ("homo sapiens",), {"tissue": "brain", "cells": "neurons"}, "My best sample ever")
     lib = Library(("transcriptome",), ("poly-A",), Stranding.Forward)
     exp = Experiment("exp-1", sample, lib, (run,))
     project = Project("super-project-ind", (exp,), (sample,))
@@ -42,7 +42,7 @@ def test_yaml_adapter_single_layout():
 
 def test_yaml_adapter_unknown_stranding():
     run = SeqRun("my-run", "illumina", SeqLayout.Paired, (Path("file1.fastq"), Path("file2.fastq")), 1000000, 200000000)
-    sample = Sample("smpl-ind", ("homo sapiens",), ("brain", "neurons"))
+    sample = Sample("smpl-ind", ("homo sapiens",), {"tissue": "brain", "cells": "neurons"}, "My best sample ever")
     lib = Library(("transcriptome",), ("poly-A",), Stranding.Unknown)
     exp = Experiment("exp-1", sample, lib, (run,))
     project = Project("super-project-ind", (exp,), (sample,))
@@ -52,7 +52,7 @@ def test_yaml_adapter_unknown_stranding():
 
 def test_yaml_adapter_no_tags():
     run = SeqRun("my-run", "illumina", SeqLayout.Paired, (Path("file1.fastq"), Path("file2.fastq")), 1000000, 200000000)
-    sample = Sample("smpl-ind", ("homo sapiens",), ())
+    sample = Sample("smpl-ind", ("homo sapiens",))
     lib = Library(("transcriptome",), ("poly-A",), Stranding.Forward)
     exp = Experiment("exp-1", sample, lib, (run,))
     project = Project("super-project-ind", (exp,), (sample,))

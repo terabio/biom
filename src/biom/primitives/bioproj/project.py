@@ -97,21 +97,3 @@ class Project:
         :return: a new Project instance including only the specified experiments, samples, and runs
         """
         raise ValueError("Not implemented")
-        # experiments_filter = experiments if experiments else lambda _: True
-        # samples_filter = samples if samples else lambda _, __: True
-        # runs_filter = runs if runs else lambda _, __: True
-        #
-        # passed = []
-        # for exp in self.experiments:
-        #     if not experiments_filter(exp):
-        #         continue
-        #     if not samples_filter(exp, exp.sample):
-        #         continue
-        #     passed_runs = tuple(filter(lambda run: runs_filter(exp, run), exp.runs))
-        #
-        #     if passed_runs:
-        #         passed.append(Experiment(exp.ind, exp.sample, exp.library, passed_runs))
-        #
-        # ind = newind if newind else self.ind
-        #
-        # return Project(ind, passed, tuple(self.samples))
