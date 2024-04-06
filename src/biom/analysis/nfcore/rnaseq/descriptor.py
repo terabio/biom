@@ -7,7 +7,7 @@ __all__ = ["from_bioexp", "to_expind"]
 
 def from_bioexp(
         experiment: bioproj.Experiment, *,
-        title_builder: Callable[[bioproj.Experiment], str] | None = None,
+        title_builder: Callable[[bioproj.Experiment], str] | str | None = None,
         separator: str = "+"
 ) -> str:
     """
@@ -15,14 +15,18 @@ def from_bioexp(
     nf-core/rnaseq pipeline design files.
 
     :param experiment: The bioproj.Experiment object to be converted.
-    :param title_builder: A function that converts a bioproj.Experiment object into a human-readable title. If None,
-        the title is built by concatenating all experiment sample attributes. If the sample has no attributes,
-        the sample description is used as the title.
+    :param title_builder: A function that converts a bioproj.Experiment object into a human-readable title. If string,
+        the title is set to the attribute with the given name. If None, the title is built by concatenating all
+        experiment sample attributes. If the sample has no attributes, the sample description is used as the title.
     :param separator: The string used to separate the experiment index and its title in the resulting descriptor.
     :return: A string descriptor, composed of the experiment index and its title, separated by the specified separator.
     """
-    if title_builder:
+    if isinstance(title_builder, Callable):
         title = title_builder(experiment)
+    elif isinstance(title_builder, str):
+        if title_builder not in experiment.sample.attributes:
+            raise ValueError(f"Attribute '{title_builder}' not found in the sample attributes: {experiment.sample}")
+        title = experiment.sample.attributes[title_builder]
     else:
         attributes: list[str] = []
         for atrribute, value in sorted(experiment.sample.attributes.items()):
