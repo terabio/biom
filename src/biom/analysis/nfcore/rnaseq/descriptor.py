@@ -21,7 +21,7 @@ def from_bioexp(
     :param separator: The string used to separate the experiment index and its title in the resulting descriptor.
     :return: A string descriptor, composed of the experiment index and its title, separated by the specified separator.
     """
-    if isinstance(title_builder, Callable):
+    if callable(title_builder):
         title = title_builder(experiment)
     elif isinstance(title_builder, str):
         if title_builder not in experiment.sample.attributes:
