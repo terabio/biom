@@ -114,7 +114,7 @@ def load_bioproj(
         # Parse attributes
         attributes = {"title": row['sample_title']}
 
-        if row['sample_description'] != attributes['title']:
+        if row['sample_description']:
             description = row['sample_description']
         else:
             description = None
