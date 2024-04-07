@@ -1,29 +1,29 @@
 import pytest
 
-from biom.primitives import Direction
+from biom.primitives import Orientation
 
 
 def test_strand_str_repr():
-    assert str(Direction.fwd) == "+"
-    assert repr(Direction.fwd) == "+"
-    assert str(Direction.rev) == "-"
-    assert repr(Direction.rev) == "-"
-    assert str(Direction.unknown) == "."
-    assert repr(Direction.unknown) == "."
+    assert str(Orientation.fwd) == "+"
+    assert repr(Orientation.fwd) == "+"
+    assert str(Orientation.rev) == "-"
+    assert repr(Orientation.rev) == "-"
+    assert str(Orientation.unstranded) == "."
+    assert repr(Orientation.unstranded) == "."
 
 
 def test_strand_normalize():
-    assert Direction.normalize("+") == Direction.fwd
-    assert Direction.normalize(1) == Direction.fwd
-    assert Direction.normalize(Direction.fwd) == Direction.fwd
-    assert Direction.normalize("-") == Direction.rev
-    assert Direction.normalize(-1) == Direction.rev
-    assert Direction.normalize(Direction.rev) == Direction.rev
-    assert Direction.normalize(".") == Direction.unknown
-    assert Direction.normalize(0) == Direction.unknown
-    assert Direction.normalize(Direction.unknown) == Direction.unknown
+    assert Orientation.normalize("+") == Orientation.fwd
+    assert Orientation.normalize(1) == Orientation.fwd
+    assert Orientation.normalize(Orientation.fwd) == Orientation.fwd
+    assert Orientation.normalize("-") == Orientation.rev
+    assert Orientation.normalize(-1) == Orientation.rev
+    assert Orientation.normalize(Orientation.rev) == Orientation.rev
+    assert Orientation.normalize(".") == Orientation.unstranded
+    assert Orientation.normalize(0) == Orientation.unstranded
+    assert Orientation.normalize(Orientation.unstranded) == Orientation.unstranded
 
 
 def test_strand_normalize_invalid():
     with pytest.raises(ValueError):
-        Direction.normalize("invalid")
+        Orientation.normalize("invalid")

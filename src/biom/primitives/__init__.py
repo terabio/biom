@@ -1,6 +1,6 @@
 from . import strdeductor
-from .direction import Direction, DirectionLike
+from .orientation import Orientation, OrientationLike
 from .range import Range
 from .strand import Strand, StrandLike, Stranded
 
-__all__ = ["Range", "Direction", "DirectionLike", "Strand", "StrandLike", "Stranded", "strdeductor"]
+__all__ = ["Range", "Orientation", "OrientationLike", "Strand", "StrandLike", "Stranded", "strdeductor"]

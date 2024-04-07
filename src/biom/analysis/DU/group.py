@@ -1,6 +1,6 @@
 from attrs import define
 
-from biom.primitives import Range, Direction
+from biom.primitives import Range, Orientation
 
 
 @define(slots=True, frozen=True, eq=True, order=True, repr=True, hash=True)
@@ -14,7 +14,7 @@ class Interval:
     :param end: End position of the region piece.
     """
     contig: str
-    strand: Direction
+    strand: Orientation
     start: int
     end: int
 

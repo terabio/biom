@@ -9,7 +9,7 @@ from biom import algo, io
 from biom.analysis import counting
 from biom.analysis.nfcore import rnaseq
 from biom.ds import gindex
-from biom.primitives import Direction, Range, strdeductor, bioproj
+from biom.primitives import Orientation, Range, strdeductor, bioproj
 from .group import Interval, Group
 
 BamReaderFn = Callable[[rnaseq.Experiment], counting.Source]
@@ -58,7 +58,7 @@ class IntervalsPartition:
         keys: The keys corresponding to the intervals.
     """
     contig: str
-    strand: Direction
+    strand: Orientation
     intervals: tuple[Interval, ...]
     keys: tuple[AnnoKey, ...]
 
@@ -232,7 +232,7 @@ def run(
         raise ValueError("Partition must have at least one interval")
 
     # Build the index
-    skeleton = {(partition.contig, Direction.fwd): IntervalTree(), (partition.contig, Direction.rev): IntervalTree()}
+    skeleton = {(partition.contig, Orientation.fwd): IntervalTree(), (partition.contig, Orientation.rev): IntervalTree()}
     assert all(i.contig == partition.contig for i in partition.intervals)
     assert all(i.strand == partition.strand for i in partition.intervals)
 

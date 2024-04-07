@@ -5,7 +5,7 @@ from typing import Callable, TypeVar, Generic
 from intervaltree import IntervalTree
 from pybedtools import BedTool, Interval as BedInterval
 
-from biom.primitives import Range, Direction, DirectionLike
+from biom.primitives import Range, Orientation, OrientationLike
 from .overlap import Overlap
 
 _T = TypeVar("_T")
@@ -21,7 +21,7 @@ def merge(*indices: "GenomicIndex[_T]") -> "GenomicIndex[_T]":
     elif len(indices) == 1:
         return indices[0]
 
-    keys: set[tuple[str, Direction]] = set()
+    keys: set[tuple[str, Orientation]] = set()
     for ind in indices:
         for key in ind.itrees.keys():
             keys.add(key)
@@ -39,23 +39,23 @@ def merge(*indices: "GenomicIndex[_T]") -> "GenomicIndex[_T]":
 
 
 class GenomicIndex(Generic[_T]):
-    itrees: dict[tuple[str, Direction], IntervalTree]
+    itrees: dict[tuple[str, Orientation], IntervalTree]
 
-    def __init__(self, itrees: dict[tuple[str, Direction], IntervalTree] | None = None):
+    def __init__(self, itrees: dict[tuple[str, Orientation], IntervalTree] | None = None):
         self.itrees = itrees if itrees else {}
 
-    def add(self, contig: str, direction: DirectionLike, index: IntervalTree):
-        self.itrees[(contig, Direction.normalize(direction))] = index
+    def add(self, contig: str, orientation: OrientationLike, index: IntervalTree):
+        self.itrees[(contig, Orientation.normalize(orientation))] = index
 
     def overlap(
             self,
             contig: str,
-            direction: DirectionLike,
+            orientation: OrientationLike,
             start: int | None = None,
             end: int | None = None,
             rng: Range | None = None,
     ) -> Overlap[_T]:
-        dr = Direction.normalize(direction)
+        orient = Orientation.normalize(orientation)
 
         if (start is None or end is None) and rng is None:
             raise ValueError("Either start and end or range must be provided")
@@ -67,7 +67,7 @@ class GenomicIndex(Generic[_T]):
                 raise ValueError("Both start and end must be provided")
             rng = Range(start, end)
 
-        index = self.itrees.get((contig, dr), None)
+        index = self.itrees.get((contig, orient), None)
         if index is None:
             return Overlap(rng, [], [])
 
@@ -95,11 +95,11 @@ class GenomicIndex(Generic[_T]):
     ) -> "GenomicIndex[_T]":
         filterfn = filterfn if filterfn is not None else (lambda _: True)
 
-        itrees: defaultdict[tuple[str, Direction], IntervalTree] = defaultdict(IntervalTree)
+        itrees: defaultdict[tuple[str, Orientation], IntervalTree] = defaultdict(IntervalTree)
         for it in BedTool(bed):
             if not filterfn(it):
                 continue
-            key = (it.chrom, Direction.normalize(it.strand))
+            key = (it.chrom, Orientation.normalize(it.strand))
             itrees[key].addi(it.start, it.end, data=datafn(it))
-        result: dict[tuple[str, Direction], IntervalTree] = dict(itrees)
+        result: dict[tuple[str, Orientation], IntervalTree] = dict(itrees)
         return GenomicIndex(result)
