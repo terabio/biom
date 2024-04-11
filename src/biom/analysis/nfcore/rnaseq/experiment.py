@@ -24,7 +24,7 @@ class Experiment:
         #     raise ValueError(f"Results folder {resfolder} does not exist")
 
         # BAM file
-        bam = resfolder / "star_salmon" / "bigwig" / f"{descriptor}.markdup.sorted.bam"
+        bam = resfolder / "star_salmon" / f"{descriptor}.markdup.sorted.bam"
 
         # Bigwig
         if source.library.stranding in {bioproj.Stranding.Unstranded, bioproj.Stranding.Unknown}:
@@ -32,8 +32,8 @@ class Experiment:
                 f"Unstranded experiments or experiments with unknown strandedness are not supported: {descriptor}"
             )
 
-        fwd = resfolder / "star_salmon" / f"{descriptor}.forward.bigWig"
-        rev = resfolder / "star_salmon" / f"{descriptor}.reverse.bigWig"
+        fwd = resfolder / "star_salmon" / "bigwig" / f"{descriptor}.forward.bigWig"
+        rev = resfolder / "star_salmon" / "bigwig" / f"{descriptor}.reverse.bigWig"
 
         bigwig = Stranded(fwd, rev)
 
