@@ -24,7 +24,7 @@ class Experiment:
         #     raise ValueError(f"Results folder {resfolder} does not exist")
 
         # BAM file
-        bam = resfolder / "star_salmon" / f"{descriptor}.markdup.sorted.bam"
+        bam = resfolder / "star_salmon" / "bigwig" / f"{descriptor}.markdup.sorted.bam"
 
         # Bigwig
         if source.library.stranding in {bioproj.Stranding.Unstranded, bioproj.Stranding.Unknown}:
