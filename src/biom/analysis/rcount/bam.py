@@ -62,6 +62,7 @@ class BAMCounter(IndexedReadCounter[_T]):
         self._counter.reset()
 
 
+@define(frozen=True, slots=True)
 class PEBAMCounter(IndexedReadCounter[_T]):
     """
     A paired-end BAM-based reads counter. The counter can be either used to count all reads in a given file or, if the BAM
