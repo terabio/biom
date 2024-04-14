@@ -3,16 +3,16 @@ from collections import defaultdict
 from collections.abc import Callable
 from typing import TypeVar, Generic, cast
 
-from biom.ds.gindex import Overlap
+from .overlap import Overlap
 
-__all__ = ["Resolution", "Proportional", "Binary", "Priority", "Normalize", "AnnotationWeights"]
+__all__ = ["Resolution", "Proportional", "Binary", "Priority", "Normalize", "Counts"]
 
 _T = TypeVar("_T")
 _I = TypeVar("_I")
 _O = TypeVar("_O")
 _D = TypeVar("_D")
 
-AnnotationWeights = dict[_T, float]
+Counts = dict[_T, float]
 
 
 class Resolution(Generic[_I, _O], ABC):
@@ -52,11 +52,11 @@ class _Lambda(Generic[_I, _O, _T], Resolution[_I, _O]):
         return self.fn(data)
 
 
-class Proportional(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
+class Proportional(Resolution[list[Overlap[_T]], Counts[_T | None]]):
     def __init__(self, empty: _T | None = None):
         self.empty = empty
 
-    def __call__(self, overlaps: list[Overlap[_T]]) -> AnnotationWeights[_T | None]:
+    def __call__(self, overlaps: list[Overlap[_T]]) -> Counts[_T | None]:
         """
         The proportional strategy assigns weights to annotation categories based on the overlap of the target ROI
         with each category
@@ -64,7 +64,7 @@ class Proportional(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
         if len(overlaps) == 0:
             return {self.empty: 1}
 
-        weights: AnnotationWeights[_T | None] = {}
+        weights: Counts[_T | None] = {}
         covered, total = 0, 0
         for roiov in overlaps:
             total += len(roiov.rng)  # original ROI length
@@ -83,11 +83,11 @@ class Proportional(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
         return weights
 
 
-class Binary(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
+class Binary(Resolution[list[Overlap[_T]], Counts[_T | None]]):
     def __init__(self, empty: _T | None = None):
         self.empty = empty
 
-    def __call__(self, overlaps: list[Overlap[_T]]) -> AnnotationWeights[_T | None]:
+    def __call__(self, overlaps: list[Overlap[_T]]) -> Counts[_T | None]:
         """
         The binary strategy assigns weights to annotation categories based on the presence of at least a single base pair
         overlap between the read block and each category
@@ -111,12 +111,12 @@ class Binary(Resolution[list[Overlap[_T]], AnnotationWeights[_T | None]]):
         return weights
 
 
-class Priority(Generic[_T, _D], Resolution[AnnotationWeights[_T], AnnotationWeights[_T]]):
+class Priority(Generic[_T, _D], Resolution[Counts[_T], Counts[_T]]):
     def __init__(self, priority: list[_D], key: Callable[[_T], _D] | None = None):
         self.priority = priority
         self.key = key or (lambda x: cast(_D, x))
 
-    def __call__(self, weights: AnnotationWeights[_T]) -> AnnotationWeights[_T]:
+    def __call__(self, weights: Counts[_T]) -> Counts[_T]:
         """
         The priority strategy picks the first category in the priority list that is also present in the weights.
         If more than one category is mapped to the same priority, all such categories are returned.
@@ -137,11 +137,11 @@ class Priority(Generic[_T, _D], Resolution[AnnotationWeights[_T], AnnotationWeig
         return {cat: weights[cat] for cat in categories}
 
 
-class Normalize(Resolution[AnnotationWeights[_T], AnnotationWeights[_T]]):
+class Normalize(Resolution[Counts[_T], Counts[_T]]):
     def __init__(self, total: float = 1.0):
         self.total = total
 
-    def __call__(self, weights: AnnotationWeights[_T]) -> AnnotationWeights[_T]:
+    def __call__(self, weights: Counts[_T]) -> Counts[_T]:
         """
         Normalize annotation weights to sum to a given total
         """

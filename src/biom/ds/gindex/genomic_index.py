@@ -44,7 +44,7 @@ class GenomicIndex(Generic[_T]):
     def __init__(self, itrees: dict[tuple[str, Orientation], IntervalTree] | None = None):
         self.itrees = itrees if itrees else {}
 
-    def add(self, contig: str, orientation: OrientationLike, index: IntervalTree):
+    def set(self, contig: str, orientation: OrientationLike, index: IntervalTree):
         self.itrees[(contig, Orientation.normalize(orientation))] = index
 
     def overlap(
