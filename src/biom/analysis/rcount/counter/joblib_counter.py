@@ -51,7 +51,7 @@ def run(
     index_range = Range(start, end)
 
     # Count reads
-    counts: defaultdict[_T, float] = defaultdict(float)
+    counts: dict[_T | None, float] = defaultdict(float)
     for blocks in source.fetch(partition.contig, index_range.start, index_range.end):
         overlaps = [index.overlap(partition.contig, blocks.orientation, rng=rng) for rng in blocks.blocks]
         for k, v in resolution(overlaps).items():
@@ -63,8 +63,9 @@ def run(
 
     stats['Time(s)'] = finished_at - launched_at
     stats['Partition'] = f"{partition.contig}:{start}-{end}"
+    stats["Beyond annotation"] = counts.pop(None, 0)
 
-    return tag, dict(counts), source.stats()
+    return tag, dict(counts), stats  # type: ignore
 
 
 @define(slots=True)
@@ -73,7 +74,7 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
     A class representing a reads counter that uses joblib to parallelize the counting process.
     """
     _sources: dict[str, Source] = field(alias="sources")
-    resolution: Resolution[list[Overlap[_T]], Counts[_T]]
+    resolution: Resolution[list[Overlap[_T]], Counts[_T | None]]
     parallel: Parallel
     _counts: dict[str, Counts[_T]] = field(factory=dict, init=False)
     _stats: dict = field(factory=dict, init=False)
