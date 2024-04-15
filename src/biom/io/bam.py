@@ -115,6 +115,9 @@ class Reader:
         else:
             return self._iter_without_statistics()
 
+    def __deepcopy__(self, _):
+        return Reader(self.filename, self.inflags, self.exflags, self.minmapq, statistics=self.statistics)
+
 
 @dataclass
 class _PEReadsCache:
