@@ -104,11 +104,11 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
 
         # Merge counts & stats
         for tag, counts, stats in results:
-            _counts = self._counts.get(tag, {})
+            _counts = self._counts.setdefault(tag, {})
             for k, v in counts.items():
                 _counts[k] = _counts.get(k, 0) + v
 
-            _stats = self._stats.get(tag, {})
+            _stats = self._stats.setdefault(tag, {})
             for k, v in stats.items():
                 _stats[k] = _stats.get(k, 0) + v
 
