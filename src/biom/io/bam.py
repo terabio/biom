@@ -118,6 +118,16 @@ class Reader:
     def __deepcopy__(self, _):
         return Reader(self.filename, self.inflags, self.exflags, self.minmapq, statistics=self.statistics)
 
+    def __getstate__(self):
+        return self.filename, self.inflags, self.exflags, self.minmapq, self.statistics
+
+    def __setstate__(self, state):
+        self.filename, self.inflags, self.exflags, self.minmapq, self.statistics = state
+        self.sf = AlignmentFile(self.filename.as_posix(), "rb")
+        self.iterator = self.sf
+        self.consumed = None if not self.statistics else ConsumedReads()
+        self.discarded = None if not self.statistics else ConsumedReads()
+
 
 @dataclass
 class _PEReadsCache:
