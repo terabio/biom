@@ -115,9 +115,6 @@ class Reader:
         else:
             return self._iter_without_statistics()
 
-    def __del__(self):
-        self.sf.close()
-
 
 @dataclass
 class _PEReadsCache:
