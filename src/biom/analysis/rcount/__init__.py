@@ -1,4 +1,5 @@
-from .bam import BAMCounter, PEBAMCounter
-from .read_counter import ReadCounter, IndexedReadCounter
+from . import source, resolve
+from .resolve import Resolution
+from .source import Source
 
-__all__ = ['ReadCounter', 'IndexedReadCounter', 'BAMCounter', 'PEBAMCounter']
+__all__ = ['source', 'resolve', 'Source', 'Resolution']

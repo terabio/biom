@@ -7,7 +7,7 @@ from .strand import Strand
 class Orientation(Enum):
     fwd = "+"
     rev = "-"
-    unstranded = "."
+    dual = "."
 
     def __repr__(self):
         return self.value
@@ -23,7 +23,7 @@ class Orientation(Enum):
             case "-" | -1:
                 return Orientation.rev
             case "." | 0:
-                return Orientation.unstranded
+                return Orientation.dual
             case _ if isinstance(orientation, cls):
                 return orientation
             case _ if isinstance(orientation, Strand):

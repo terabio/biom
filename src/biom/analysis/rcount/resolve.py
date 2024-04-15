@@ -3,7 +3,7 @@ from collections import defaultdict
 from collections.abc import Callable
 from typing import TypeVar, Generic, cast
 
-from .overlap import Overlap
+from biom.ds.gindex import Overlap
 
 __all__ = ["Resolution", "Proportional", "Binary", "Priority", "Normalize", "Counts"]
 

@@ -1,11 +1,12 @@
 from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Callable, TypeVar, Generic
 
 from intervaltree import IntervalTree
 from pybedtools import BedTool, Interval as BedInterval
 
-from biom.primitives import Range, Orientation, OrientationLike
+from biom.primitives import Range, Orientation, OrientationLike, Interval
 from .overlap import Overlap
 
 _T = TypeVar("_T")
@@ -86,6 +87,30 @@ class GenomicIndex(Generic[_T]):
             return self
         else:
             return merged
+
+    def subset(
+            self, contig: str, start: int, end: int, orientation: OrientationLike | None = None
+    ) -> "GenomicIndex[_T]":
+        if orientation is None:
+            orients = [Orientation.fwd, Orientation.rev, Orientation.dual]
+        else:
+            orients = [Orientation.normalize(orientation)]
+
+        trees = {}
+        for orient in orients:
+            index = self.itrees.get((contig, orient), None)
+            if index is not None:
+                tree = IntervalTree()
+                for it in index.overlap(start, end):
+                    tree.addi(it.begin, it.end, data=it.data)
+                trees[(contig, orient)] = tree
+
+        return GenomicIndex(trees)
+
+    def covered(self) -> Iterable[Interval]:
+        for (contig, orientation), tree in self.itrees.items():
+            for it in tree.all_intervals:
+                yield Interval(contig, Range(it.begin, it.end), orientation)
 
     @staticmethod
     def from_bed(
