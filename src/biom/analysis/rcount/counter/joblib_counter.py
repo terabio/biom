@@ -2,7 +2,7 @@ import copy
 import time
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from attrs import define
 from attrs import field
@@ -12,7 +12,7 @@ from joblib import Parallel, delayed
 from biom.ds.gindex import Overlap, GenomicIndex
 from biom.primitives import Interval, Orientation, Range
 from .partition import Partition
-from .reads_counter import MultiReadsCounter
+from .reads_counter import MultiReadsCounter, CountingStats
 from ..resolve import Counts, Resolution
 from ..source import Source
 
@@ -24,7 +24,7 @@ def run(
         source: Source,
         partition: Partition[_T],
         resolution: Resolution[list[Overlap[_T]], Counts[_T]],
-) -> tuple[str, Counts[_T], dict]:
+) -> tuple[str, Counts[_T], CountingStats]:
     if len(partition) == 0:
         raise ValueError("Partition must have at least one interval")
 
@@ -59,13 +59,18 @@ def run(
 
     finished_at = time.time()
 
-    stats = source.stats()
+    no_overlap = counts.pop(None, 0)
+    no_null_counts = cast(dict[_T, float], dict(counts))
 
-    stats['Time(s)'] = finished_at - launched_at
-    stats['Partition'] = f"{partition.contig}:{start}-{end}"
-    stats["Beyond annotation"] = counts.pop(None, 0)
+    stats = CountingStats(
+        time=finished_at - launched_at,
+        partition=Interval(partition.contig, index_range),
+        has_overlap=sum(counts.values()),
+        no_overlap=no_overlap,
+        extra=source.stats()
+    )
 
-    return tag, dict(counts), stats  # type: ignore
+    return tag, no_null_counts, stats
 
 
 @define(slots=True)
@@ -77,7 +82,7 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
     resolution: Resolution[list[Overlap[_T]], Counts[_T | None]]
     parallel: Parallel
     _counts: dict[str, Counts[_T]] = field(factory=dict, init=False)
-    _stats: dict = field(factory=dict, init=False)
+    _stats: list[CountingStats] = field(factory=list, init=False)
 
     def count(self, data: Iterable[_T], intervals: Iterable[Interval]):
         """
@@ -109,9 +114,7 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
             for k, v in counts.items():
                 _counts[k] = _counts.get(k, 0) + v
 
-            _stats = self._stats.setdefault(tag, {})
-            for k, v in stats.items():
-                _stats[k] = _stats.get(k, 0) + v
+            self._stats.append(stats)
 
     def counts(self) -> dict[str, Counts[_T]]:
         return self._counts
@@ -119,7 +122,7 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
     def sources(self) -> dict[str, Source]:
         return self._sources
 
-    def stats(self) -> dict:
+    def stats(self) -> Iterable[CountingStats]:
         return self._stats
 
     def reset(self):
