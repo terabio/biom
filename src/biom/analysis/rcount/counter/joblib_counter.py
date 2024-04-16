@@ -17,14 +17,15 @@ from ..resolve import Counts, Resolution
 from ..source import Source
 
 _T = TypeVar('_T')
+_K = TypeVar('_K')
 
 
 def run(
-        tag: str,
+        tag: _K,
         source: Source,
         partition: Partition[_T],
         resolution: Resolution[list[Overlap[_T]], Counts[_T]],
-) -> tuple[str, Counts[_T], CountingStats]:
+) -> tuple[_K, Counts[_T], CountingStats]:
     if len(partition) == 0:
         raise ValueError("Partition must have at least one interval")
 
@@ -65,8 +66,8 @@ def run(
     stats = CountingStats(
         time=finished_at - launched_at,
         partition=Interval(partition.contig, index_range),
-        has_overlap=sum(counts.values()),
-        no_overlap=no_overlap,
+        inside=sum(counts.values()),
+        outside=no_overlap,
         extra=source.stats()
     )
 
@@ -74,14 +75,14 @@ def run(
 
 
 @define(slots=True)
-class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
+class JoblibMultiReadsCounter(MultiReadsCounter[_T, _K]):
     """
     A class representing a reads counter that uses joblib to parallelize the counting process.
     """
-    _sources: dict[str, Source] = field(alias="sources")
+    _sources: dict[_K, Source] = field(alias="sources")
     resolution: Resolution[list[Overlap[_T]], Counts[_T | None]]
     parallel: Parallel
-    _counts: dict[str, Counts[_T]] = field(factory=dict, init=False)
+    _counts: dict[_K, Counts[_T]] = field(factory=dict, init=False)
     _stats: list[CountingStats] = field(factory=list, init=False)
 
     def count(self, data: Iterable[_T], intervals: Iterable[Interval]):
@@ -116,10 +117,10 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T]):
 
             self._stats.append(stats)
 
-    def counts(self) -> dict[str, Counts[_T]]:
+    def counts(self) -> dict[_K, Counts[_T]]:
         return self._counts
 
-    def sources(self) -> dict[str, Source]:
+    def sources(self) -> dict[_K, Source]:
         return self._sources
 
     def stats(self) -> Iterable[CountingStats]:
