@@ -28,9 +28,9 @@ def from_rnaseq(
         projects: Iterable[rnaseq.Project], *,
         se_bam: Callable[[Path], io.bam.Reader] = default_se_bam_reader,
         pe_bam: Callable[[Path], io.bam.PEReadsBundler] = default_pe_bam_reader,
-        key: Callable[[rnaseq.Project, rnaseq.Experiment], _K] = default_key,
+        key: Callable[[rnaseq.Project, rnaseq.Experiment], _K] = default_key,  # type: ignore
 ) -> dict[_K, Source]:
-    results = {}
+    results: dict[_K, Source] = {}
     for prj in projects:
         for experiment in prj.experiments:
             stranding = strdeductor.from_bioproj(experiment.source)
@@ -49,9 +49,9 @@ def from_rnaseq(
 
             match layout:
                 case bioproj.SeqLayout.Single:
-                    results[key] = SingleEndBAM(se_bam(experiment.bam), stranding)
+                    results[record] = SingleEndBAM(se_bam(experiment.bam), stranding)
                 case bioproj.SeqLayout.Paired:
-                    results[key] = PairedEndBAM(pe_bam(experiment.bam), stranding)
+                    results[record] = PairedEndBAM(pe_bam(experiment.bam), stranding)
                 case _:
                     raise ValueError(f"Unsupported layout: {layout}")
     return results
