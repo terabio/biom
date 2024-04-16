@@ -1,12 +1,12 @@
 from collections import defaultdict
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Self, Iterator
 
+from attrs import define, field
 from pysam import AlignedSegment, AlignmentFile
 
 
-@dataclass(slots=True)
+@define(slots=True)
 class ConsumedReads:
     paired: int = 0
     proper_pair: int = 0
@@ -73,8 +73,8 @@ class ConsumedReads:
 class Reader:
     def __init__(self, filename: Path, inflags: int, exflags: int, minmapq: int, *, statistics: bool = False):
         self.filename: Path = filename
-        self.sf: AlignmentFile = AlignmentFile(filename.as_posix(), "rb")
-        self.iterator: Iterable[AlignedSegment] = self.sf
+        self.sf: AlignmentFile | None = None
+        self.iterator: Iterable[AlignedSegment] | None = None
         self.inflags: int = inflags
         self.exflags: int = exflags
         self.minmapq: int = minmapq
@@ -84,6 +84,8 @@ class Reader:
         self.discarded: ConsumedReads | None = None if not statistics else ConsumedReads()
 
     def fetch(self, contig: str, start: int | None = None, end: int | None = None) -> Self:
+        if self.sf is None:
+            self.sf = AlignmentFile(self.filename.as_posix(), "rb")
         self.iterator = self.sf.fetch(contig, start, end)
         return self
 
@@ -96,6 +98,7 @@ class Reader:
 
     def _iter_with_statistics(self) -> Iterator[AlignedSegment]:
         assert self.consumed is not None and self.discarded is not None
+        assert self.iterator is not None
 
         for segment in self.iterator:
             if self._is_read_ok(segment):
@@ -104,12 +107,24 @@ class Reader:
             else:
                 self.discarded.count(segment)
 
+        self.iterator = None
+
     def _iter_without_statistics(self) -> Iterator[AlignedSegment]:
+        assert self.iterator is not None
         for segment in self.iterator:
             if self._is_read_ok(segment):
                 yield segment
 
+        self.iterator = None
+
     def __iter__(self) -> Iterator[AlignedSegment]:
+        if self.sf is None:
+            self.sf = AlignmentFile(self.filename.as_posix(), "rb")
+            self.iterator = self.sf
+
+        if self.iterator is None:
+            self.iterator = self.sf
+
         if self.statistics:
             return self._iter_with_statistics()
         else:
@@ -123,16 +138,15 @@ class Reader:
 
     def __setstate__(self, state):
         self.filename, self.inflags, self.exflags, self.minmapq, self.statistics = state
-        self.sf = AlignmentFile(self.filename.as_posix(), "rb")
-        self.iterator = self.sf
+        self.sf = None
         self.consumed = None if not self.statistics else ConsumedReads()
         self.discarded = None if not self.statistics else ConsumedReads()
 
 
-@dataclass
+@define(slots=True)
 class _PEReadsCache:
-    lmates: list[AlignedSegment]
-    rmates: list[AlignedSegment]
+    lmates: list[AlignedSegment] = field(factory=list)
+    rmates: list[AlignedSegment] = field(factory=list)
 
     def bundle(self) -> Iterator[tuple[AlignedSegment, AlignedSegment]]:
         missed_lmates = []
@@ -167,7 +181,7 @@ class _PEReadsCache:
 class PEReadsBundler:
     def __init__(self, reader: Reader, step: int = 100_000):
         self.reader: Reader = reader
-        self.cache: dict[str, _PEReadsCache] = defaultdict(lambda *args: _PEReadsCache([], []))
+        self.cache: dict[str, _PEReadsCache] = defaultdict(_PEReadsCache)
 
         self.step: int = step
         self.unpaired = 0
