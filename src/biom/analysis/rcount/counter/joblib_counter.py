@@ -101,13 +101,12 @@ class JoblibMultiReadsCounter(MultiReadsCounter[_T, _K]):
         # Group data into local partitions to support the parallel counting
         partitions = Partition.from_intervals(_data, _intervals)
 
-        # Prepare the workload and run the counting process
-        workloads = []
-        for partition in partitions:
-            for tag, source in self._sources.items():
-                workloads.append((tag, copy.deepcopy(source), partition, self.resolution))
-
-        results = self.parallel(delayed(run)(*workload) for workload in workloads)
+        # Run the counting process
+        results = self.parallel(
+            delayed(run)(tag, copy.deepcopy(source), partition, self.resolution)
+            for partition in partitions
+            for tag, source in self._sources.items()
+        )
 
         # Merge counts & stats
         for tag, counts, stats in results:
