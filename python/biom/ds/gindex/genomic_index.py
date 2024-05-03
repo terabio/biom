@@ -6,7 +6,7 @@ from typing import Callable, TypeVar, Generic
 from intervaltree import IntervalTree
 from pybedtools import BedTool, Interval as BedInterval
 
-from core import Range, Orientation, OrientationLike, Interval
+from biom.core import Range, Orientation, OrientationLike, Interval
 from .overlap import Overlap
 
 _T = TypeVar("_T")

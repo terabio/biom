@@ -14,7 +14,7 @@ class Stranding(Enum):
 
     def __str__(self) -> str:
         return self.value
-    
+
     @classmethod
     def normalize(cls, value: str) -> 'Stranding':
         match value.lower():

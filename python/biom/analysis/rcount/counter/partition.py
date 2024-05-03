@@ -4,7 +4,7 @@ from typing import TypeVar, Iterable, Generic
 from attrs import define
 
 from biom import algo
-from core import Interval
+from biom.core import Interval
 
 _T = TypeVar('_T')
 
@@ -45,7 +45,7 @@ class Partition(Generic[_T]):
         results = []
         for contig, part in partition.items():
             part.sort(key=lambda x: x[0].rng.start)
-            partitions = biom.core.algo.misc.group_within(
+            partitions = algo.misc.group_within(
                 part,
                 distance=lambda x, y: min(
                     abs(y[0].rng.start - x[0].rng.start),

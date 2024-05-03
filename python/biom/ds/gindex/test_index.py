@@ -2,7 +2,7 @@ import intervaltree as it
 import pytest
 
 from biom.ds.gindex import GenomicIndex
-from core import Orientation, Range
+from biom.core import Orientation, Range
 
 
 @pytest.fixture

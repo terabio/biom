@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 
 from sortedcontainers import SortedList
 
-from core import Range
+from biom.core import Range
 
 _T = TypeVar("_T")
 

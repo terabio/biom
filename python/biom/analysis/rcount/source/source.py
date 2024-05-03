@@ -2,7 +2,7 @@ from typing import Iterator, Protocol
 
 from attrs import define
 
-from core import Range, Orientation
+from biom.core import Range, Orientation
 
 
 @define(slots=True, frozen=True)

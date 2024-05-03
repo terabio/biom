@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from core import bioproj
+from biom.analysis import bioproj
 
 __all__ = ["from_bioexp", "to_expind"]
 

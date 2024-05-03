@@ -3,21 +3,22 @@ from pathlib import Path
 from typing import TypeVar, Callable
 
 from biom import io
-from ...nfcore import rnaseq
-from core import strdeductor, bioproj
+from biom.analysis import bioproj
+from biom.core import strdeductor
 from .bam import SingleEndBAM, PairedEndBAM
 from .source import Source
+from ...nfcore import rnaseq
 
 _K = TypeVar('_K')
 
 
-def default_se_bam_reader(path: Path) -> biom.M.io.bam.Reader:
-    return biom.M.io.bam.Reader(path, inflags=0, exflags=2564, minmapq=0, statistics=True)
+def default_se_bam_reader(path: Path) -> io.bam.Reader:
+    return io.bam.Reader(path, inflags=0, exflags=2564, minmapq=0, statistics=True)
 
 
-def default_pe_bam_reader(path: Path) -> biom.M.io.bam.PEReadsBundler:
-    reader = biom.M.io.bam.Reader(path, inflags=3, exflags=2564, minmapq=0, statistics=True)
-    return biom.M.io.bam.PEReadsBundler(reader)
+def default_pe_bam_reader(path: Path) -> io.bam.PEReadsBundler:
+    reader = io.bam.Reader(path, inflags=3, exflags=2564, minmapq=0, statistics=True)
+    return io.bam.PEReadsBundler(reader)
 
 
 def default_key(prj: rnaseq.Project, experiment: rnaseq.Experiment) -> tuple[str, str]:
@@ -26,8 +27,8 @@ def default_key(prj: rnaseq.Project, experiment: rnaseq.Experiment) -> tuple[str
 
 def from_rnaseq(
         projects: Iterable[rnaseq.Project], *,
-        se_bam: Callable[[Path], biom.M.io.bam.Reader] = default_se_bam_reader,
-        pe_bam: Callable[[Path], biom.M.io.bam.PEReadsBundler] = default_pe_bam_reader,
+        se_bam: Callable[[Path], io.bam.Reader] = default_se_bam_reader,
+        pe_bam: Callable[[Path], io.bam.PEReadsBundler] = default_pe_bam_reader,
         key: Callable[[rnaseq.Project, rnaseq.Experiment], _K] = default_key,  # type: ignore
 ) -> dict[_K, Source]:
     results: dict[_K, Source] = {}

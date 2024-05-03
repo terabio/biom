@@ -9,7 +9,7 @@ from joblib import Parallel, delayed
 from typing import TypeVar, cast
 
 from biom.ds.gindex import Overlap, GenomicIndex
-from core import Interval, Orientation, Range
+from biom.core import Interval, Orientation, Range
 from .partition import Partition
 from .reads_counter import MultiReadsCounter, CountingStats
 from ..resolve import Counts, Resolution

@@ -1,6 +1,6 @@
 import pytest
 
-from core import strdeductor, Strand
+from biom.core import strdeductor, Strand
 
 
 def test_get():

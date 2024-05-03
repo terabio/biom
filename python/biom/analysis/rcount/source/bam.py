@@ -3,9 +3,9 @@ from typing import Iterator
 
 from attrs import define, field
 
+from biom.core import Range, Orientation
+from biom.core.strdeductor import StrandDeductor
 from biom.io import bam
-from core import Range, Orientation
-from core import StrandDeductor
 from .source import Source, AlignedBlocks
 
 
@@ -34,7 +34,6 @@ class SingleEndBAM(Source):
                 "Processed reads": self.obj.consumed.total,
             })
         return stats
-
 
 
 @define(frozen=True, slots=True)

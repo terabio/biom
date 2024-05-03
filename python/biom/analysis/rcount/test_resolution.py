@@ -1,7 +1,7 @@
 import pytest
 
 from biom.ds.gindex import Overlap
-from core import Range
+from biom.core import Range
 from .resolve import _Chain, _Lambda, Proportional, Binary, Priority, Normalize
 
 

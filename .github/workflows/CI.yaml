@@ -24,7 +24,7 @@ jobs:
       - name: Code style & linting
         uses: chartboost/ruff-action@v1
         with:
-          src: "./src"
+          src: "./python"
           version: 0.2.1
           args: "check"
       - name: Install dependencies
@@ -33,7 +33,7 @@ jobs:
           python -m pip install '.[dev]'
       - name: Mypy type checks
         run: |
-          mypy src
+          mypy python
       - name: Tests
         run: |
           pytest

@@ -4,7 +4,7 @@ from typing import Callable
 
 from attrs import define, field
 
-from core import bioproj
+from biom.analysis import bioproj
 from . import descriptor
 from .experiment import Experiment
 

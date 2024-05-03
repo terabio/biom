@@ -2,7 +2,7 @@ from typing import Protocol, TypeVar, Iterable
 
 from attrs import define, field
 
-from core import Interval
+from biom.core import Interval
 from ..resolve import Counts
 from ..source import Source
 

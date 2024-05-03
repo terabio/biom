@@ -1,7 +1,7 @@
 import pytest
 
 from biom.ds.gindex.overlap import Overlap, OverlapSteps
-from core import Range
+from biom.core import Range
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 import pytest
 
-from core import Orientation
+from biom.core import Orientation
 
 
 def test_orientation_str_repr():

@@ -1,7 +1,7 @@
 import pytest
 
-from core import Range
-from core import OverlapInfo
+from biom.core import Range
+from biom.core.range import OverlapInfo
 
 
 def test_add_some():
